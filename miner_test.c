@@ -47,7 +47,7 @@ void Initialize_Equation (int n, int e, int ***Eqs) {
 
 // Define a function set all array elements to zero.
 void Initialize_Array (uint64_t maxsol, uint64_t **SolArray) {
-	for (int i=0; i<maxsol; i++) {
+	for (uint64_t i=0; i<maxsol; i++) {
 		SolArray[i] = (uint64_t *)malloc(4 * sizeof(uint64_t));
 		for (int j=0; j<4; j++)
 			SolArray[i][j] = 0;

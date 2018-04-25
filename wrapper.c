@@ -49,6 +49,7 @@ wrapper_settings_t * init_settings() {
 
 void choose_settings( wrapper_settings_t *s, int n, int n_eqs, int degree) {
   // choose algorithm
+  assert(n_eqs > 0);
   if ( s->algorithm == ALGO_AUTO ) {
     if (degree < s->algo_auto_degree_bound) {
       verbose_print(s, "low degree (%d) --> using enumeration code [threshold=%d]", degree, s->algo_auto_degree_bound);
@@ -165,7 +166,6 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
   // TODO : this should probably also include a run-time check that SSE2 instructions are actually there
 
   if ( !settings->algo_enum_use_sse ) {
-  //if (1) {
     switch (d) {
     case 2: exhaustive_ia32_deg_2(LUT, n, F, callback, callback_state, settings->verbose); break;
     //case 3: exhaustive_ia32_deg_3(LUT, n, F, callback, callback_state, settings->verbose); break;
@@ -244,7 +244,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
     return;
   }
 
-  bool must_free_tester_state = false;
+  //bool must_free_tester_state = false;
   const uint64_t N = n_monomials(n, degree);
   //  int enumerated_equations = 128 >> (T);
 
@@ -329,7 +329,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
     tester_state->callback = callback;
     tester_state->callback_state = callback_state;
-    must_free_tester_state = true;
+    //must_free_tester_state = true;
 
     callback = solution_tester;
     callback_state = (void *) tester_state;

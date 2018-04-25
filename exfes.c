@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <time.h>
 
 #include "fes_interface.h"
@@ -24,6 +25,7 @@ int C (int n, int m) {
 }
 
 int Merge_Solution (void *unused, uint64_t count, uint64_t *Sol) {
+	assert(unused == NULL);
 	while (count > 0 && SolCount < MaxSolCount) {
 		SolMerge[SolCount][0] = (Sol[count-1] << mcopy) ^ solm;
 		SolMerge[SolCount][1] = Sol[count-1] >> (64 - mcopy);
