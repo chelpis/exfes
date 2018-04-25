@@ -165,7 +165,8 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
 
   // TODO : this should probably also include a run-time check that SSE2 instructions are actually there
 
-  if ( !settings->algo_enum_use_sse ) {
+  //if ( !settings->algo_enum_use_sse ) {
+  if (1) {
     switch (d) {
     case 2: exhaustive_ia32_deg_2(LUT, n, F, callback, callback_state, settings->verbose); break;
     //case 3: exhaustive_ia32_deg_3(LUT, n, F, callback, callback_state, settings->verbose); break;
@@ -181,7 +182,7 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
   } else {
     if ( settings->word_size == 32 ) {
       switch (d) {
-      case 2: exhaustive_sse2_deg_2_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
+      //case 2: exhaustive_sse2_deg_2_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 3: exhaustive_sse2_deg_3_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 4: exhaustive_sse2_deg_4_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 5: exhaustive_sse2_deg_5_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
@@ -195,7 +196,7 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
     }
     else if ( settings->word_size == 16 ){
       switch (d) {
-      case 2: exhaustive_sse2_deg_2_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
+      //case 2: exhaustive_sse2_deg_2_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 3: exhaustive_sse2_deg_3_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 4: exhaustive_sse2_deg_4_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 5: exhaustive_sse2_deg_5_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
@@ -209,7 +210,7 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
     }
     else if ( settings->word_size == 8 ){
       switch (d) {
-      case 2: exhaustive_sse2_deg_2_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
+      //case 2: exhaustive_sse2_deg_2_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 3: exhaustive_sse2_deg_3_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 4: exhaustive_sse2_deg_4_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
       //case 5: exhaustive_sse2_deg_5_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
