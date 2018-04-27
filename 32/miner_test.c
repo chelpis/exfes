@@ -109,7 +109,6 @@ void Generate_Equation (int n, int e, uint64_t *Sol, int ***Eqs) {
 // Define a function to print solutions obtained from exfes.
 int Report_Solution (uint64_t maxsol, uint64_t **SolArray) {
 	for (uint64_t i=0; i<maxsol; i++) {
-		//printf("    Sol = %016"PRIx64"%016"PRIx64"%016"PRIx64"%016"PRIx64"\n", SolArray[i][3], SolArray[i][2], SolArray[i][1], SolArray[i][0]);
 		uint256 s;
 		for (int j=3; j>=0; j--) {
 			s = s << 64;
@@ -128,6 +127,7 @@ int main () {
 	int e = 6; // Test exfes with e equations.
 	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
 	Initialize_Equation(n, e, Eqs); // Set all array elements to zero.
+	uint64_t Mask[2] = {0xa740c932887dc0a3, 0x572afe39a8bc39d3}; // The solver starts searching from the value of mask.
 	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
 	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
 	Initialize_Array(maxsol, SolArray); // Set all array elements to zero.
@@ -147,29 +147,9 @@ int main () {
 		1,0,0,1,1,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,1,0,0,0,0,0,0,0,1
 	};
 	Transform_Data_Structure(n, e, coefficientsMatrix, Eqs); // Transform coefficientsMatrix into the structure required by exfes.
-	exfes(m, n, e, maxsol, Eqs, SolArray); // Solve equations by exfes.
+	exfes(m, n, e, Mask, maxsol, Eqs, SolArray); // Solve equations by exfes.
 	Report_Solution(maxsol, SolArray); // Report obtained solutions in uint256 format.
 	
-	/*
-	// Generate a solution randomly.
-	printf("Generate a solution randomly ...\n");
-	uint64_t *Sol = (uint64_t *)malloc(sizeof(uint64_t));
-	Generate_Solution(n, Sol);
-	printf("    Sol = ""%016"PRIx64"\n", Sol[0]);
-
-	// Generate equations randomly.
-	printf("Generate equations randomly ...\n");
-	Generate_Equation(n, e, Sol, Eqs);
-	//Print_Equation(n, e, Eqs);
-
-	// Solve equations by exfes.
-	printf("Solve equations by exfes ...\n");
-	exfes(m, n, e, maxsol, Eqs, SolArray);
-
-	// Report obtained solutions in uint256 format.
-	Report_Solution(maxsol, SolArray);
-	*/
-
 	return 0;
 
 }
