@@ -123,8 +123,8 @@ int Report_Solution (uint64_t maxsol, uint64_t **SolArray) {
 int main (int argc, char **argv) {
 
 	int m = 0; // M variables will be fixed by exfes before calling libFES.
-	int n = 24; // Test exfes with n variables.
-	int e = 20; // Test exfes with e equations.
+	int n = 63; // Test exfes with n variables.
+	int e = 72; // Test exfes with e equations.
 
 	int ch;
 	struct option longopts[4] = {
@@ -145,7 +145,7 @@ int main (int argc, char **argv) {
 
 	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
 	Initialize_Equation(n, e, Eqs); // Set all array elements to zero.
-	uint64_t Mask[2] = {0xa740c932887dc0a3, 0x572afe39a8bc39d3}; // The solver starts searching from the value of mask.
+	uint64_t Mask[2] = {0x7069e7b32fd6b809, 0x0000000000000000}; // The solver starts searching from the value of mask.
 	uint64_t maxsol = 16; // The solver only returns maxsol solutions. Other solutions will be discarded.
 	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
 	Initialize_Array(maxsol, SolArray); // Set all array elements to zero.

@@ -141,6 +141,7 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
     if (is_correct){
       corrects_solutions[index_correct_solution] = current_solution;
       index_correct_solution++;
+	  break; // Early aborb.
     }
   }
 

@@ -49,6 +49,7 @@ int Merge_Solution (void *unused, uint64_t count, uint64_t *Sol) {
 		}
 		SolCount += 1;
 		count -= 1;
+		return 1; // Early aborb.
 	}
 	return 0;
 }
@@ -109,5 +110,8 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***Eqs, ui
 			ncopy -= 1;
 		}
 		exhaustive_search_wrapper(ncopy, e, 2, EqsCopy, Merge_Solution, NULL, Settings);
+		// Determine to early aborb or not.
+		if (SolCount == 1)
+			return;
 	}
 }

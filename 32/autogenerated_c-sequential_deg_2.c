@@ -66,7 +66,7 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
   #define FLUSH_SOLUTIONS() { \
     if ((*callback)(callback_state, current_solution_index, pack_of_solution)) \
       QUIT(); \
-    }
+  }
 
   #define PUSH_SOLUTION(current_solution) { \
     pack_of_solution[current_solution_index] = current_solution; \
