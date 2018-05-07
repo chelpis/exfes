@@ -54,7 +54,7 @@ int Merge_Solution (void *unused, uint64_t count, uint64_t *Sol) {
 	return 0;
 }
 
-void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***Eqs, uint64_t **SolArray) {
+void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnmask, uint64_t **SolArray) {
 	wrapper_settings_t *Settings = init_settings();
 	mcopy = m;
 	ncopy = n;
@@ -62,6 +62,16 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***Eqs, ui
 	SolCount = 0;
 	MaxSolCount = maxsol;
 	MaskCopy = Mask;
+	// Make a copy of EqsUnmask for masking.
+	int ***Eqs = calloc(e, sizeof(int **));
+	for (int i=0; i<e; i++) {
+		Eqs[i] = calloc(3, sizeof(int *));
+		for (int j=0; j<3; j++) {
+			Eqs[i][j] = malloc(C(n, j) * sizeof(int));
+			for (int k=0; k<C(n, j); k++)
+				Eqs[i][j][k] = EqsUnmask[i][j][k];
+		}
+	}
 	// Mask Eqs for a random start point.
 	for (int i=0; i<e; i++) {
 		for (int j=0; j<n; j++)
@@ -76,7 +86,7 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***Eqs, ui
 			}
 	}
 	// Make a copy of Eqs for evaluating fixed variables.
-	int *** EqsCopy = calloc(e, sizeof(int **));
+	int ***EqsCopy = calloc(e, sizeof(int **));
 	for (int i=0; i<e; i++) {
 		EqsCopy[i] = calloc(3, sizeof(int *));
 		for (int j=0; j<3; j++)

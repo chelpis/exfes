@@ -25,6 +25,14 @@ int B (int n, int m) {
 		return 0;
 }
 
+// Define a function to find the index-th bit of Sol.
+int S (uint64_t *Sol, int index) {
+	if (index < 64)
+		return (Sol[0] >> index) & 1;
+	else
+		return (Sol[1] >> (index - 64)) & 1;
+}
+
 // Define a function to print equations for debugging.
 void Print_Equation (int n, int e, int ***Eqs) {
 	for (int i=0; i<e; i++) {
@@ -75,9 +83,21 @@ void Transform_Data_Structure (int n, int e, int *coefficientsMatrix, int ***Eqs
 // Define a function to generate a solution randomly.
 void Generate_Solution (int n, uint64_t *Sol) {
 	Sol[0] = 0;
-	for (int i=0; i<n; i++) {
-		Sol[0] = Sol[0] << 1;
-		Sol[0] = Sol[0] ^ (rand() & 1);
+	Sol[1] = 0;
+	if (n <= 64)
+		for (int i=0; i<n; i++) {
+			Sol[0] = Sol[0] << 1;
+			Sol[0] = Sol[0] ^ (rand() & 1);
+		}
+	else {
+		for (int i=0; i<64; i++) {
+			Sol[0] = Sol[0] << 1;
+			Sol[0] = Sol[0] ^ (rand() & 1);
+		}
+		for (int i=0; i<n-64; i++) {
+			Sol[1] = Sol[1] << 1;
+			Sol[1] = Sol[1] ^ (rand() & 1);
+		}
 	}
 }
 
@@ -86,11 +106,11 @@ int Evaluate_Solution (int n, uint64_t *Sol, int **Eqs) {
 	int val = 0;
 	val ^= Eqs[0][0];
 	for (int i=0; i<n; i++)
-		val ^= Eqs[1][i] & ((Sol[0] >> i) & 1);
+		val ^= Eqs[1][i] & S(Sol, i);
 	int offset = 0;
 	for (int i=0; i<n-1; i++) {
 		for (int j=i+1; j<n; j++)
-			val ^= Eqs[2][offset+j-(i+1)] & ((Sol[0] >> i) & 1) & ((Sol[0] >> j) & 1);
+			val ^= Eqs[2][offset+j-(i+1)] & S(Sol, i) & S(Sol, j);
 		offset += n - (i + 1);
 	}
 	return val;
@@ -111,19 +131,26 @@ void Generate_Equation (int n, int e, uint64_t *Sol, int ***Eqs) {
 
 // Define a function to print solutions obtained from exfes.
 int Report_Solution (uint64_t maxsol, uint64_t **SolArray) {
-	for (uint64_t i=0; i<maxsol; i++) {
-		if (SolArray[i][0] == SolGlobal[0] && SolArray[i][1] == 0 && SolArray[i][2] == 0 && SolArray[i][3] == 0)
-			printf("    Sol = %016"PRIx64"(O)\n", SolArray[i][0]);
-		else
-			printf("    Sol = %016"PRIx64"(X)\n", SolArray[i][0]);
-	}
+	for (uint64_t i=0; i<maxsol; i++)
+		printf("    Solution = %016"PRIx64"%016"PRIx64"\n", SolArray[i][1], SolArray[i][0]);
 	return 0;
+}
+
+// Define a function to check solution.
+void Check_Solution (int n, int e, uint64_t *Sol, int ***Eqs) {
+	int count = 0;
+	for (int i=0; i<e; i++) {
+		int val = Evaluate_Solution(n, Sol, Eqs[i]);
+		if (val == 0)
+			count += 1;
+	}
+	printf("    Fitting Equations = %d\n", count);
 }
 
 int main (int argc, char **argv) {
 
-	int m = 0; // M variables will be fixed by exfes before calling libFES.
-	int n = 63; // Test exfes with n variables.
+	int m = 17; // M variables will be fixed by exfes before calling libFES.
+	int n = 80; // Test exfes with n variables.
 	int e = 72; // Test exfes with e equations.
 
 	int ch;
@@ -145,8 +172,8 @@ int main (int argc, char **argv) {
 
 	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
 	Initialize_Equation(n, e, Eqs); // Set all array elements to zero.
-	uint64_t Mask[2] = {0x7069e7b32fd6b809, 0x0000000000000000}; // The solver starts searching from the value of mask.
-	uint64_t maxsol = 16; // The solver only returns maxsol solutions. Other solutions will be discarded.
+	uint64_t Mask[2] = {0xe0d3cf665fad7012, 0x000000000000e5eb}; // The solver starts searching from the value of mask.
+	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
 	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
 	Initialize_Array(maxsol, SolArray); // Set all array elements to zero.
 	
@@ -154,13 +181,16 @@ int main (int argc, char **argv) {
 	printf("Generate a solution randomly ...\n");
 	uint64_t *Sol = (uint64_t *)malloc(sizeof(uint64_t));
 	Generate_Solution(n, Sol);
-	printf("    Sol = ""%016"PRIx64"\n", Sol[0]);
+	printf("    Solution = ""%016"PRIx64"%016"PRIx64"\n", Sol[1], Sol[0]);
 	SolGlobal = Sol;
 
 	// Generate equations randomly.
-	printf("Generate equations randomly ...\n");
+	//printf("Generate equations randomly ...\n");
 	Generate_Equation(n, e, Sol, Eqs);
 	//Print_Equation(n, e, Eqs);
+
+	// Check generated equations.
+	Check_Solution(n, e, Sol, Eqs);
 
 	// Solve equations by exfes.
 	printf("Solve equations by exfes ...\n");
@@ -168,6 +198,9 @@ int main (int argc, char **argv) {
 
 	// Report obtained solutions in uint256 format.
 	Report_Solution(maxsol, SolArray);
+
+	// Check reported solution.
+	Check_Solution(n, e, SolArray[0], Eqs);
 
 	return 0;
 
