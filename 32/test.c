@@ -3,13 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <getopt.h>
-#include <iostream>
 
-#include "uint128_256.h"
-
-extern "C" {
-	#include "exfes.h"
-}
+#include "exfes.h"
 
 uint64_t *SolGlobal;
 
@@ -176,7 +171,7 @@ int main (int argc, char **argv) {
 	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
 	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
 	Initialize_Array(maxsol, SolArray); // Set all array elements to zero.
-	
+
 	// Generate a solution randomly.
 	printf("Generate a solution randomly ...\n");
 	uint64_t *Sol = (uint64_t *)malloc(sizeof(uint64_t));
