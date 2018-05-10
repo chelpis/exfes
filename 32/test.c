@@ -62,12 +62,19 @@ void Free_Equations (int e, int ***Eqs) {
 }
 
 // Define a function set all array elements to zero.
-void Initialize_Array (uint64_t maxsol, uint64_t **SolArray) {
+uint64_t **Initialize_Array (uint64_t maxsol) {
+	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
 	for (uint64_t i=0; i<maxsol; i++) {
-		SolArray[i] = (uint64_t *)malloc(4 * sizeof(uint64_t));
-		for (int j=0; j<4; j++)
-			SolArray[i][j] = 0;
+		SolArray[i] = (uint64_t *)calloc(4, sizeof(uint64_t));
 	}
+	return SolArray;
+}
+
+void Free_Array (uint64_t maxsol, uint64_t **SolArray) {
+	for (uint64_t i=0; i<maxsol; i++) {
+		free(SolArray[i]);
+	}
+	free(SolArray);
 }
 
 // Transform coefficientsMatrix into the structure required by exfes.
@@ -179,13 +186,14 @@ int main (int argc, char **argv) {
 
 	uint64_t Mask[2] = {0xe0d3cf665fad7012, 0x000000000000e5eb}; // The solver starts searching from the value of mask.
 	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
-	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
-	Initialize_Array(maxsol, SolArray); // Set all array elements to zero.
+
+	uint64_t **SolArray = Initialize_Array(maxsol); // Set all array elements to zero.
 
 	// Generate a solution randomly.
 	printf("Generate a solution randomly ...\n");
 	uint64_t *Sol = (uint64_t *)malloc(2 * sizeof(uint64_t));
 	Generate_Solution(n, Sol);
+
 	printf("    Solution = ""%016"PRIx64"%016"PRIx64"\n", Sol[1], Sol[0]);
 	SolGlobal = Sol;
 
@@ -207,6 +215,7 @@ int main (int argc, char **argv) {
 	// Check reported solution.
 	Check_Solution(n, e, SolArray[0], Eqs);
 
+	Free_Array(maxsol, SolArray);
 	Free_Equations(e, Eqs);
 
 	return 0;
