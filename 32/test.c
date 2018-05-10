@@ -40,15 +40,25 @@ void Print_Equation (int n, int e, int ***Eqs) {
 }
 
 // Define a function set all equation elements to zero.
-void Initialize_Equation (int n, int e, int ***Eqs) {
+int ***Initialize_Equations (int n, int e) {
+	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
 	for (int i=0; i<e; i++) {
 		Eqs[i] = (int **)calloc(3, sizeof(int *));
 		for (int j=0; j<3; j++) {
-			Eqs[i][j] = (int *)malloc(B(n, j) * sizeof(int));
-			for (int k=0; k<B(n, j); k++)
-				Eqs[i][j][k] = 0;
+			Eqs[i][j] = (int *)calloc(B(n, j), sizeof(int));
 		}
 	}
+	return Eqs;
+}
+
+void Free_Equations (int e, int ***Eqs) {
+	for (int i=0; i<e; i++) {
+		for (int j=0; j<3; j++) {
+			free(Eqs[i][j]);
+		}
+		free(Eqs[i]);
+	}
+	free(Eqs);
 }
 
 // Define a function set all array elements to zero.
@@ -165,8 +175,8 @@ int main (int argc, char **argv) {
 		}
 	}
 
-	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
-	Initialize_Equation(n, e, Eqs); // Set all array elements to zero.
+	int ***Eqs = Initialize_Equations(n, e); // Set all array elements to zero.
+
 	uint64_t Mask[2] = {0xe0d3cf665fad7012, 0x000000000000e5eb}; // The solver starts searching from the value of mask.
 	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
 	uint64_t **SolArray = (uint64_t **)calloc(maxsol, sizeof(uint64_t *)); // Create an array for exfes to store solutions.
@@ -196,6 +206,8 @@ int main (int argc, char **argv) {
 
 	// Check reported solution.
 	Check_Solution(n, e, SolArray[0], Eqs);
+
+	Free_Equations(e, Eqs);
 
 	return 0;
 
