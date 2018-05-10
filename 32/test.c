@@ -174,7 +174,7 @@ int main (int argc, char **argv) {
 
 	// Generate a solution randomly.
 	printf("Generate a solution randomly ...\n");
-	uint64_t *Sol = (uint64_t *)malloc(sizeof(uint64_t));
+	uint64_t *Sol = (uint64_t *)malloc(2 * sizeof(uint64_t));
 	Generate_Solution(n, Sol);
 	printf("    Solution = ""%016"PRIx64"%016"PRIx64"\n", Sol[1], Sol[0]);
 	SolGlobal = Sol;

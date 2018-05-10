@@ -147,11 +147,16 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
 
   timeSecondStep += (rdtsc() - start);
 
-  if (index_correct_solution == 0)
-    return 0;   // no new solution found, keep searching
+  int answer_found = 0;
 
-  // report solution to the actual callback, and ask whether it wants to keep going
-  return (*(state->callback))(state->callback_state, index_correct_solution, corrects_solutions);
+  if (index_correct_solution) {
+    // report solution to the actual callback, and ask whether it wants to keep going
+    answer_found = (*(state->callback))(state->callback_state, index_correct_solution, corrects_solutions);
+  }
+
+  free(corrects_solutions);
+
+  return answer_found;
 }
 
 // --------------------------------------------------------------------------------------
@@ -231,20 +236,21 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
 // -------------------------------------
 
 void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
-  wrapper_state_t * tester_state = NULL;
-
-  if (settings == NULL) {
-    settings = init_settings();
-  }
-  choose_settings(settings, n, n_eqs, degree);
-
-  if (n > 64) {
-    fprintf(stderr, "fes: Your equations have more than 64 variables, but the FES library handles at most 64.\n");
-    fprintf(stderr, "fes: You may want to specialize (n-64) variables to fit into the constraints.\n");
+  if (n > 63) {
+    fprintf(stderr, "fes: Your equations have more than 63 variables, but the FES library handles at most 63.\n");
+    fprintf(stderr, "fes: You may want to specialize (n-63) variables to fit into the constraints.\n");
     fprintf(stderr, "fes: (also, do you realize that it will take a **LONG** time?)\n");
     fprintf(stderr, "fes: aborting.\n");
     return;
   }
+
+  bool should_free_settings = 0;
+  if (settings == NULL) {
+    settings = init_settings(); // XXX
+    should_free_settings = 1;
+  }
+
+  choose_settings(settings, n, n_eqs, degree);
 
   //bool must_free_tester_state = false;
   const uint64_t N = n_monomials(n, degree);
@@ -276,6 +282,8 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
   }
 
   // ---------- deal where the case where there is more equations than what the kernel(s) deals with
+
+  wrapper_state_t * tester_state = NULL;
 
   if ( n_eqs <= settings->word_size ) {
     // this is the simple case where the enumeration itself is enough
@@ -322,7 +330,9 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
     // the "tester" needs some internal state
     if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
        err(EX_OSERR, "[fes/wrapper/allocate wrapper]");
+       return;
     }
+
     tester_state->n = n;
     tester_state->degree = degree;
     tester_state->n_batches = n_batches-1;
@@ -367,4 +377,8 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
   free_LUT( idx_LUT );
   free( F );
+
+  if (should_free_settings) {
+    free(settings);
+  }
 }

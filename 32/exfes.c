@@ -65,8 +65,6 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 }
 
 void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnmask, uint64_t **SolArray) {
-	wrapper_settings_t *Settings = init_settings();
-
 	struct exfes_context exfes_ctx;
 	exfes_ctx.mcopy = m;
 	exfes_ctx.ncopy = n;
@@ -134,7 +132,7 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnma
 			npartial -= 1;
 		}
 
-		exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, Settings);
+		exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, 0);
 
 		// Determine to early aborb or not.
 		if (exfes_ctx.SolCount == 1)
