@@ -60,6 +60,7 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 		SolMerge[SolCount][0] ^= MaskCopy[0];
 		SolMerge[SolCount][1] ^= (MaskCopy[1] << (128 - ncopy)) >> (128 - ncopy);
 	}
+	p -> SolCount = 1;
 
 	return 1;
 }
