@@ -283,6 +283,9 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
   // ---------- deal where the case where there is more equations than what the kernel(s) deals with
 
+  pck_vector_t **G = NULL;
+  bool should_free_G = 0;
+
   wrapper_state_t * tester_state = NULL;
 
   if ( n_eqs <= settings->word_size ) {
@@ -313,7 +316,6 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
        testing_LUT = init_deginvlex_LUT(n, degree);
      }
 
-     pck_vector_t **G = NULL;
      G = calloc(n_batches-1, sizeof(pck_vector_t *));
      if (G == NULL) {
        err(EX_OSERR, "[fes/wrapper/enumeration/allocate G]");
@@ -326,6 +328,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
        }
        convert_input_equations(n, degree, settings->word_size*i, min(n_eqs, settings->word_size*(i+1)), coeffs, testing_LUT, G[i-1]);
      }
+     should_free_G = 1;
 
     // the "tester" needs some internal state
     if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
@@ -367,8 +370,18 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
   // ----------- clean up
 
+  if ( should_free_G ) {
+    int n_batches = n_eqs / settings->word_size;
+    if ( (n_eqs % settings->word_size) > 0 ) {
+      n_batches++;
+    }
+    for(int i=1; i<n_batches; i++) {
+      free(G[i-1]);
+    }
+    free(G);
+  }
+
   if ( tester_state != NULL ) {
-    // TODO HERE -- must free G
     if ( settings->algorithm == ALGO_FFT ) {
       free_LUT( tester_state->testing_LUT );
     }
