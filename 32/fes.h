@@ -8,7 +8,6 @@
 
 #include "idx_LUT.h"
 #include "fes_interface.h"
-#include "config.h"
 
 typedef int*  vector_t ;
 typedef vector_t* matrix_t;
@@ -54,7 +53,6 @@ system_t generate_random_system(int n, int u);
 void free_system(int n, int n_eqs, system_t f);
 
 #include "all_functions.h"
-void moebius_transform(int n, pck_vector_t F[], solution_callback_t callback, void* callback_state); // moebius_transform.c
 
 void print_vec(__m128i foo);
 

@@ -159,13 +159,6 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
   return answer_found;
 }
 
-// --------------------------------------------------------------------------------------
-void moebius_wrapper(int n, pck_vector_t F[], solution_callback_t callback, void* callback_state, wrapper_settings_t *settings) {
-  verbose_print(settings, "running FFT");
-  moebius_transform(n, F, callback, callback_state);
-}
-
-
 // ------------------------------------------------
 void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
 
@@ -354,14 +347,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
   verbose_print(settings, "starting kernel");
   uint64_t start = rdtsc();
 
-  switch( settings->algorithm) {
-  case ALGO_ENUMERATION:
-    enumeration_wrapper(idx_LUT->LUT, n, degree, F, callback, callback_state, settings);
-    break;
-  case ALGO_FFT:
-    moebius_wrapper(n, F, callback, callback_state, settings);
-    break;
-  }
+  enumeration_wrapper(idx_LUT->LUT, n, degree, F, callback, callback_state, settings);
 
   uint64_t totalTime = rdtsc() - start;
   float sizeSecondStep = (timeSecondStep * 100.0) / totalTime;
