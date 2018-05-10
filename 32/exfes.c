@@ -84,6 +84,7 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnma
 				Eqs[i][j][k] = EqsUnmask[i][j][k];
 		}
 	}
+
 	// Mask Eqs for a random start point.
 	for (int i=0; i<e; i++) {
 		for (int j=0; j<n; j++)
@@ -104,6 +105,7 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnma
 		for (int j=0; j<3; j++)
 			EqsCopy[i][j] = malloc(C(n, j) * sizeof(int));
 	}
+
 	// Partition problem into (1<<n_fixed) sub_problems.
 	int p = n - m;
 	int npartial;
@@ -136,6 +138,22 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnma
 
 		// Determine to early aborb or not.
 		if (exfes_ctx.SolCount == 1)
-			return;
+			break;
 	}
+
+	for (int i=0; i<e; i++) {
+		for (int j=0; j<3; j++) {
+			free(EqsCopy[i][j]);
+		}
+		free(EqsCopy[i]);
+	}
+	free(EqsCopy);
+
+	for (int i=0; i<e; i++) {
+		for (int j=0; j<3; j++) {
+			free(Eqs[i][j]);
+		}
+		free(Eqs[i]);
+	}
+	free(Eqs);
 }
