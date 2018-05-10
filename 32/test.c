@@ -215,6 +215,7 @@ int main (int argc, char **argv) {
 	// Check reported solution.
 	Check_Solution(n, e, SolArray[0], Eqs);
 
+	free(Sol);
 	Free_Array(maxsol, SolArray);
 	Free_Equations(e, Eqs);
 
