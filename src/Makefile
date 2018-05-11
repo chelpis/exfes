@@ -1,8 +1,7 @@
 CC = gcc
 
 CFLAGS = -std=c99
-CFLAGS += -Wall
-CFLAGS += -Wextra
+CFLAGS += -Wall -Wextra -Wpedantic
 CFLAGS += -O3
 
 SRC_FILES = $(wildcard *.c *.cpp)

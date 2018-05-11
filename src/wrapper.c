@@ -350,9 +350,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
   enumeration_wrapper(idx_LUT->LUT, n, degree, F, callback, callback_state, settings);
 
   uint64_t totalTime = rdtsc() - start;
-  float sizeSecondStep = (timeSecondStep * 100.0) / totalTime;
   verbose_print(settings, "%.2f CPU cycles/candidate solution", totalTime * 1.0 / (1ll << n));
-  verbose_print(settings, "Enumeration : %.2f%% , Verification : \%.2f%%", 100-sizeSecondStep, sizeSecondStep);
 
   // ----------- clean up
 

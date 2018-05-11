@@ -60,16 +60,16 @@ void Free_Equations (int e, int ***Eqs) {
 }
 
 // Transform coefficientsMatrix into the structure required by exfes.
-void Transform_Data_Structure (int n, int e, int *coefficientsMatrix, int ***Eqs) {
+void Transform_Data_Structure_Temp (int n, int e, uint8_t *coefficientsMatrix, int ***Eqs) {
 	uint64_t offset = 0;
 	for (int i=0; i<e; i++) {
 		for (int j=0; j<B(n, 2); j++)
-			Eqs[i][2][j] = coefficientsMatrix[offset+j];
+			coefficientsMatrix[offset+j] = Eqs[i][2][j];
 		offset += B(n, 2);
 		for (int j=0; j<n; j++)
-			Eqs[i][1][j] = coefficientsMatrix[offset+j];
+			coefficientsMatrix[offset+j] = Eqs[i][1][j];
 		offset += n;
-		Eqs[i][0][0] = coefficientsMatrix[offset];
+		coefficientsMatrix[offset] = Eqs[i][0][0];
 		offset += 1;
 	}
 }
@@ -185,8 +185,11 @@ int main (int argc, char **argv) {
 	Check_Solution(n, e, genSolutionHigh, genSolutionLow, Eqs);
 
 	// Solve equations by exfes.
+	uint8_t *coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
+	Transform_Data_Structure_Temp(n, e, coefficientsMatrix, Eqs);
 	printf("Solve equations by exfes ...\n");
-	exfes(m, n, e, Mask[1], Mask[0], Eqs, &solutionHigh, &solutionLow);
+	int resultCode = exfes(m, n, e, Mask[1], Mask[0], coefficientsMatrix, &solutionHigh, &solutionLow);
+	printf("    exfes resultCode = %d\n", resultCode);
 
 	// Report obtained solutions in uint256 format.
 	Report_Solution(solutionHigh, solutionLow);
@@ -195,6 +198,7 @@ int main (int argc, char **argv) {
 	Check_Solution(n, e, genSolutionHigh, genSolutionLow, Eqs);
 
 	Free_Equations(e, Eqs);
+	free(coefficientsMatrix);
 
 	return 0;
 

@@ -36,6 +36,20 @@ int M (uint64_t startPointHigh, uint64_t startPointLow, int index) {
 		return (startPointHigh >> (index - 64)) & 1;
 }
 
+void Transform_Data_Structure (int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs) {
+	uint64_t offset = 0;
+	for (int i=0; i<e; i++) {
+		for (int j=0; j<C(n, 2); j++)
+			Eqs[i][2][j] = (int)coefficientsMatrix[offset+j];
+		offset += C(n, 2);
+		for (int j=0; j<n; j++)
+			Eqs[i][1][j] = (int)coefficientsMatrix[offset+j];
+		offset += n;
+		Eqs[i][0][0] = (int)coefficientsMatrix[offset];
+		offset += 1;
+	}
+}
+
 // 1. 已知只會有一組解
 // 2. 傳遞一個 struct exfes_context 物件的指標
 int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
@@ -67,7 +81,7 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 	return 1;
 }
 
-void exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, int ***EqsUnmask, uint64_t *solutionHigh, uint64_t *solutionLow) {
+int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, uint64_t *solutionHigh, uint64_t *solutionLow) {
 	
 	int m = numFixedVariables;
 	int n = numVariables;
@@ -88,11 +102,10 @@ void exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquat
 	for (int i=0; i<e; i++) {
 		Eqs[i] = calloc(3, sizeof(int *));
 		for (int j=0; j<3; j++) {
-			Eqs[i][j] = malloc(C(n, j) * sizeof(int));
-			for (int k=0; k<C(n, j); k++)
-				Eqs[i][j][k] = EqsUnmask[i][j][k];
+			Eqs[i][j] = calloc(C(n, j), sizeof(int));
 		}
 	}
+	Transform_Data_Structure (n, e, coefficientsMatrix, Eqs);
 
 	// Mask Eqs for a random start point.
 	for (int i=0; i<e; i++) {
@@ -165,4 +178,9 @@ void exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquat
 		free(Eqs[i]);
 	}
 	free(Eqs);
+
+	if (exfes_ctx.SolCount == 1)
+		return 0;
+	else 
+		return -1;
 }
