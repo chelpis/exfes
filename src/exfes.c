@@ -7,17 +7,6 @@
 #include "fes_interface.h"
 #include "exfes.h"
 
-struct exfes_context {
-	int mcopy;
-	int ncopy;
-	uint64_t solm;
-	uint64_t SolCount;
-	uint64_t startPointHigh;
-	uint64_t startPointLow;
-	uint64_t *solutionHigh;
-	uint64_t *solutionLow;
-};
-
 int C (int n, int m) {
 	if (m == 0)
 		return 1;
@@ -55,10 +44,9 @@ void Transform_Data_Structure (int n, int e, const uint8_t *coefficientsMatrix, 
 int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 	struct exfes_context *p = (struct exfes_context*) _ctx_ptr;
 
-	int	    const mcopy       = p -> mcopy	 ;
-	int	    const ncopy       = p -> ncopy	 ;
-	uint64_t    const solm	      = p -> solm	 ;
-	//uint64_t    const SolCount    = p -> SolCount	 ; // value is 0
+	int	const mcopy = p -> mcopy;
+	int	const ncopy = p -> ncopy;
+	uint64_t const solm	= p -> solm;
 	uint64_t const startPointHigh = p -> startPointHigh;
 	uint64_t const startPointLow = p -> startPointLow;
 	uint64_t *solutionHigh = p -> solutionHigh;
@@ -81,7 +69,7 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 	return 1;
 }
 
-int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, uint64_t *solutionHigh, uint64_t *solutionLow) {
+int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow) {
 	
 	int m = numFixedVariables;
 	int n = numVariables;
@@ -96,6 +84,7 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 	exfes_ctx.startPointLow = startPointLow;
 	exfes_ctx.solutionHigh = solutionHigh;
 	exfes_ctx.solutionLow = solutionLow;
+	exfes_ctx.shouldAbortNow = shouldAbortNow;
 
 	// Make a copy of EqsUnmask for masking.
 	int ***Eqs = calloc(e, sizeof(int **));
@@ -158,7 +147,7 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 
 		exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, 0);
 
-		// Determine to early aborb or not.
+		// Determine to early abort or not.
 		if (exfes_ctx.SolCount == 1)
 			break;
 	}

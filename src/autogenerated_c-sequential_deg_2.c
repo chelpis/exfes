@@ -4,6 +4,7 @@
 
 #include "fes.h"
 #include "idx_LUT.h"
+#include "exfes.h"
 
 #define STEP_0(i) { \
   if (unlikely(F[ 0 ] == 0)) { \
@@ -40,6 +41,9 @@ typedef struct {
 
 // generated with L = 9
 void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback_t callback, void* callback_state, int verbose) {
+  
+  wrapper_state_t *p1 = (wrapper_state_t *)callback_state;
+  struct exfes_context *p2 = (struct exfes_context *)(p1->callback_state);
   #define QUIT() { \
     return; \
   }
@@ -122,6 +126,9 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
 
     // unrolled critical section where the hamming weight is >= 2
     for(uint64_t j=512; j<(1ull << idx_0); j+=512) {
+          if ((p2 -> shouldAbortNow)())
+			  break; // Early abort if other node done.
+
           const uint64_t i = j + weight_1_start;
           int pos = 0;
           uint64_t _i = i;

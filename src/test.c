@@ -1,5 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 #include <getopt.h>
@@ -24,6 +26,10 @@ int S (uint64_t solutionHigh, uint64_t solutionLow, int index) {
 		return (solutionLow >> index) & 1;
 	else
 		return (solutionHigh >> (index - 64)) & 1;
+}
+
+bool otherNodeReady(void) {
+	return 0;
 }
 
 // Define a function to print equations for debugging.
@@ -188,7 +194,7 @@ int main (int argc, char **argv) {
 	uint8_t *coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
 	Transform_Data_Structure_Temp(n, e, coefficientsMatrix, Eqs);
 	printf("Solve equations by exfes ...\n");
-	int resultCode = exfes(m, n, e, Mask[1], Mask[0], coefficientsMatrix, &solutionHigh, &solutionLow);
+	int resultCode = exfes(m, n, e, Mask[1], Mask[0], coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
 	printf("    exfes resultCode = %d\n", resultCode);
 
 	// Report obtained solutions in uint256 format.
