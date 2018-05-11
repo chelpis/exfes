@@ -11,10 +11,11 @@ struct exfes_context {
 	int mcopy;
 	int ncopy;
 	uint64_t solm;
-	uint64_t **SolMerge;
 	uint64_t SolCount;
-	uint64_t MaxSolCount;
-	uint64_t *MaskCopy;
+	uint64_t startPointHigh;
+	uint64_t startPointLow;
+	uint64_t *solutionHigh;
+	uint64_t *solutionLow;
 };
 
 int C (int n, int m) {
@@ -28,11 +29,11 @@ int C (int n, int m) {
 		return 0;
 }
 
-int M (uint64_t *Mask, int index) {
+int M (uint64_t startPointHigh, uint64_t startPointLow, int index) {
 	if (index < 64)
-		return (Mask[0] >> index) & 1;
+		return (startPointLow >> index) & 1;
 	else
-		return (Mask[1] >> (index - 64)) & 1;
+		return (startPointHigh >> (index - 64)) & 1;
 }
 
 // 1. 已知只會有一組解
@@ -43,37 +44,44 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 	int	    const mcopy       = p -> mcopy	 ;
 	int	    const ncopy       = p -> ncopy	 ;
 	uint64_t    const solm	      = p -> solm	 ;
-	uint64_t ** const SolMerge    = p -> SolMerge	 ;
-	uint64_t    const SolCount    = p -> SolCount	 ; // XXX value is 1
-//	uint64_t    const MaxSolCount = p -> MaxSolCount ; // XXX value is 1
-	uint64_t  * const MaskCopy    = p -> MaskCopy	 ;
+	//uint64_t    const SolCount    = p -> SolCount	 ; // value is 0
+	uint64_t const startPointHigh = p -> startPointHigh;
+	uint64_t const startPointLow = p -> startPointLow;
+	uint64_t *solutionHigh = p -> solutionHigh;
+	uint64_t *solutionLow = p -> solutionLow;
 
-	SolMerge[SolCount][0] = (Sol[count-1] << mcopy) ^ solm;
+	solutionLow[0] = (Sol[count-1] << mcopy) ^ solm;
 
 	if (mcopy > 0) {
-		SolMerge[SolCount][1] = Sol[count-1] >> (64 - mcopy);
+		solutionHigh[0] = Sol[count-1] >> (64 - mcopy);
 	}
 
 	if (ncopy < 64) {
-		SolMerge[SolCount][0] ^= (MaskCopy[0] << (64 - ncopy)) >> (64 - ncopy);
+		solutionLow[0] ^= (startPointLow << (64 - ncopy)) >> (64 - ncopy);
 	} else {
-		SolMerge[SolCount][0] ^= MaskCopy[0];
-		SolMerge[SolCount][1] ^= (MaskCopy[1] << (128 - ncopy)) >> (128 - ncopy);
+		solutionLow[0] ^= startPointLow;
+		solutionHigh[0] ^= (startPointHigh << (128 - ncopy)) >> (128 - ncopy);
 	}
 	p -> SolCount = 1;
 
 	return 1;
 }
 
-void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnmask, uint64_t **SolArray) {
+void exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, int ***EqsUnmask, uint64_t *solutionHigh, uint64_t *solutionLow) {
+	
+	int m = numFixedVariables;
+	int n = numVariables;
+	int e = numEquations;
+	
 	struct exfes_context exfes_ctx;
 	exfes_ctx.mcopy = m;
 	exfes_ctx.ncopy = n;
 	exfes_ctx.solm = 0;
-	exfes_ctx.SolMerge = SolArray;
 	exfes_ctx.SolCount = 0;
-	exfes_ctx.MaxSolCount = maxsol;
-	exfes_ctx.MaskCopy = Mask;
+	exfes_ctx.startPointHigh = startPointHigh;
+	exfes_ctx.startPointLow = startPointLow;
+	exfes_ctx.solutionHigh = solutionHigh;
+	exfes_ctx.solutionLow = solutionLow;
 
 	// Make a copy of EqsUnmask for masking.
 	int ***Eqs = calloc(e, sizeof(int **));
@@ -89,13 +97,13 @@ void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***EqsUnma
 	// Mask Eqs for a random start point.
 	for (int i=0; i<e; i++) {
 		for (int j=0; j<n; j++)
-			Eqs[i][0][0] ^= Eqs[i][1][j] & M(Mask, j);
+			Eqs[i][0][0] ^= Eqs[i][1][j] & M(startPointHigh, startPointLow, j);
 		int offset = 0;
 		for (int j=0; j<n-1; j++)
 			for (int k=j+1; k<n; k++) {
-				Eqs[i][0][0] ^= Eqs[i][2][offset] & M(Mask, j) & M(Mask, k);
-				Eqs[i][1][j] ^= Eqs[i][2][offset] & M(Mask, k);
-				Eqs[i][1][k] ^= Eqs[i][2][offset] & M(Mask, j);
+				Eqs[i][0][0] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, j) & M(startPointHigh, startPointLow, k);
+				Eqs[i][1][j] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, k);
+				Eqs[i][1][k] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, j);
 				offset += 1;
 			}
 	}

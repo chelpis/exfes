@@ -1,6 +1,8 @@
 #ifndef EXFES_H
 #define EXFES_H
 
-void exfes (int m, int n, int e, uint64_t *Mask, uint64_t maxsol, int ***Eqs, uint64_t **SolArray);
+#include <stdint.h>
+
+void exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, int ***Eqs, uint64_t *solutionHigh, uint64_t *solutionLow);
 
 #endif

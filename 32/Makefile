@@ -1,16 +1,15 @@
-CXX = gcc
+CC = gcc
 
-CXXFLAGS = -std=c11
-CXXFLAGS += -Wall
-CXXFLAGS += -Wextra
-CXXFLAGS += -g
-CXXFLAGS += -O3
+CFLAGS = -std=c99
+CFLAGS += -Wall
+CFLAGS += -Wextra
+CFLAGS += -O3
 
 SRC_FILES = $(wildcard *.c *.cpp)
 DEP_FILES = $(wildcard *.c *.cpp *.h Makefile)
 
 test: $(DEP_FILES)
-	$(CXX) $(CXXFLAGS) $(SRC_FILES) -o test
+	$(CC) $(CFLAGS) $(SRC_FILES) -o test
 
 .PHONY: clean
 clean:

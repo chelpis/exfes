@@ -161,9 +161,9 @@ void Check_Solution (int n, int e, uint64_t *Sol, int ***Eqs) {
 
 int main (int argc, char **argv) {
 
-	int m = 17; // M variables will be fixed by exfes before calling libFES.
-	int n = 80; // Test exfes with n variables.
-	int e = 72; // Test exfes with e equations.
+	uint32_t m = 17; // M variables will be fixed by exfes before calling libFES.
+	uint32_t n = 80; // Test exfes with n variables.
+	uint32_t e = 72; // Test exfes with e equations.
 
 	int ch;
 	struct option longopts[4] = {
@@ -188,6 +188,8 @@ int main (int argc, char **argv) {
 	uint64_t maxsol = 1; // The solver only returns maxsol solutions. Other solutions will be discarded.
 
 	uint64_t **SolArray = Initialize_Array(maxsol); // Set all array elements to zero.
+	uint64_t solutionHigh = 0;
+	uint64_t solutionLow = 0;
 
 	// Generate a solution randomly.
 	printf("Generate a solution randomly ...\n");
@@ -207,7 +209,9 @@ int main (int argc, char **argv) {
 
 	// Solve equations by exfes.
 	printf("Solve equations by exfes ...\n");
-	exfes(m, n, e, Mask, maxsol, Eqs, SolArray);
+	exfes(m, n, e, Mask[1], Mask[0], Eqs, &solutionHigh, &solutionLow);
+	SolArray[0][0] = solutionLow;
+	SolArray[0][1] = solutionHigh;
 
 	// Report obtained solutions in uint256 format.
 	Report_Solution(maxsol, SolArray);
