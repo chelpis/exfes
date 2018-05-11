@@ -29,7 +29,7 @@ int S (uint64_t solutionHigh, uint64_t solutionLow, int index) {
 }
 
 bool otherNodeReady(void) {
-	return 0;
+	return 1;
 }
 
 // Define a function to print equations for debugging.

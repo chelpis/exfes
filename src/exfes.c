@@ -71,6 +71,7 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 
 int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow) {
 	
+
 	int m = numFixedVariables;
 	int n = numVariables;
 	int e = numEquations;
@@ -150,6 +151,8 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 		// Determine to early abort or not.
 		if (exfes_ctx.SolCount == 1)
 			break;
+		else if (exfes_ctx.SolCount == 2)
+			break;
 	}
 
 	for (int i=0; i<e; i++) {
@@ -170,6 +173,8 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 
 	if (exfes_ctx.SolCount == 1)
 		return 0;
-	else 
+	else if (exfes_ctx.SolCount == 0) 
 		return -1;
+	else
+		return -2;
 }

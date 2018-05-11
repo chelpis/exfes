@@ -126,8 +126,10 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
 
     // unrolled critical section where the hamming weight is >= 2
     for(uint64_t j=512; j<(1ull << idx_0); j+=512) {
-          if ((p2 -> shouldAbortNow)())
-			  break; // Early abort if other node done.
+          if ((p2 -> shouldAbortNow)()) {
+			  (p2 -> SolCount) = 2;
+			  return; // Early abort if other node done.
+		  }
 
           const uint64_t i = j + weight_1_start;
           int pos = 0;
