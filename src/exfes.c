@@ -39,8 +39,6 @@ void Transform_Data_Structure (int n, int e, const uint8_t *coefficientsMatrix, 
 	}
 }
 
-// 1. 已知只會有一組解
-// 2. 傳遞一個 struct exfes_context 物件的指標
 int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 	struct exfes_context *p = (struct exfes_context*) _ctx_ptr;
 
@@ -70,12 +68,18 @@ int Merge_Solution (void *_ctx_ptr, uint64_t count, uint64_t *Sol) {
 }
 
 int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow) {
-	
 
 	int m = numFixedVariables;
 	int n = numVariables;
 	int e = numEquations;
-	
+
+	if (n == 0 || n >= 127)
+		return -3;
+	else if (n - m <= 0 || n - m >= 64)
+		return -3;
+	else if (e <= 16 || e >= 256)
+		return -3;
+
 	struct exfes_context exfes_ctx;
 	exfes_ctx.mcopy = m;
 	exfes_ctx.ncopy = n;

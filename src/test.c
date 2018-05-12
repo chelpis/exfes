@@ -20,7 +20,7 @@ int B (int n, int m) {
 		return 0;
 }
 
-// Define a function to find the index-th bit of Sol.
+// Define a function to find the index-th bit of solution.
 int S (uint64_t solutionHigh, uint64_t solutionLow, int index) {
 	if (index < 64)
 		return (solutionLow >> index) & 1;
@@ -28,56 +28,9 @@ int S (uint64_t solutionHigh, uint64_t solutionLow, int index) {
 		return (solutionHigh >> (index - 64)) & 1;
 }
 
+// Define a function to check if other nodes have found solution or not.
 bool otherNodeReady(void) {
-	return 1;
-}
-
-// Define a function to print equations for debugging.
-void Print_Equation (int n, int e, int ***Eqs) {
-	for (int i=0; i<e; i++) {
-		printf("Eqs[%d] = ", i);
-		for (int j=0; j<3; j++)
-			for (int k=0; k<B(n, j); k++)
-				printf("%d ", Eqs[i][j][k]);
-		printf("\n");
-	}
-}
-
-// Define a function set all equation elements to zero.
-int ***Initialize_Equations (int n, int e) {
-	int ***Eqs = (int ***)calloc(e, sizeof(int **)); // Create an array for saving coefficients for exfes.
-	for (int i=0; i<e; i++) {
-		Eqs[i] = (int **)calloc(3, sizeof(int *));
-		for (int j=0; j<3; j++) {
-			Eqs[i][j] = (int *)calloc(B(n, j), sizeof(int));
-		}
-	}
-	return Eqs;
-}
-
-void Free_Equations (int e, int ***Eqs) {
-	for (int i=0; i<e; i++) {
-		for (int j=0; j<3; j++) {
-			free(Eqs[i][j]);
-		}
-		free(Eqs[i]);
-	}
-	free(Eqs);
-}
-
-// Transform coefficientsMatrix into the structure required by exfes.
-void Transform_Data_Structure_Temp (int n, int e, uint8_t *coefficientsMatrix, int ***Eqs) {
-	uint64_t offset = 0;
-	for (int i=0; i<e; i++) {
-		for (int j=0; j<B(n, 2); j++)
-			coefficientsMatrix[offset+j] = Eqs[i][2][j];
-		offset += B(n, 2);
-		for (int j=0; j<n; j++)
-			coefficientsMatrix[offset+j] = Eqs[i][1][j];
-		offset += n;
-		coefficientsMatrix[offset] = Eqs[i][0][0];
-		offset += 1;
-	}
+	return 0;
 }
 
 // Define a function to generate a solution randomly.
@@ -102,43 +55,42 @@ void Generate_Solution (int n, uint64_t *genSolutionHigh, uint64_t *genSolutionL
 }
 
 // Define a function to fix the costant term of equations so that they fit the generated solution.
-int Evaluate_Solution (int n, uint64_t solutionHigh, uint64_t solutionLow, int **Eqs) {
+int Evaluate_Solution (int n, uint64_t solutionHigh, uint64_t solutionLow, int index, uint8_t *coefficientsMatrix) {
 	int val = 0;
-	val ^= Eqs[0][0];
-	for (int i=0; i<n; i++)
-		val ^= Eqs[1][i] & S(solutionHigh, solutionLow, i);
-	int offset = 0;
+	int offset = index * (B(n, 2) + B(n, 1) + B(n, 0));
 	for (int i=0; i<n-1; i++) {
 		for (int j=i+1; j<n; j++)
-			val ^= Eqs[2][offset+j-(i+1)] & S(solutionHigh, solutionLow, i) & S(solutionHigh, solutionLow, j);
+			val ^= coefficientsMatrix[offset+j-(i+1)] & S(solutionHigh, solutionLow, i) & S(solutionHigh, solutionLow, j);
 		offset += n - (i + 1);
 	}
+	for (int i=0; i<n; i++)
+		val ^= coefficientsMatrix[offset+i] & S(solutionHigh, solutionLow, i);
+	offset += n;
+	val ^= coefficientsMatrix[offset];
 	return val;
 }
 
 // Define a function to randomly generate equations that fit the generated solution.
-void Generate_Equation (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, int ***Eqs) {
-	for (int i=0; i<e; i++)
-		for (int j=0; j<3; j++)
-			for (int k=0; k<B(n, j); k++)
-				Eqs[i][j][k] = rand() & 1;
+void Generate_Equation (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, uint8_t *coefficientsMatrix) {
+	for (int i=0; i<e*(B(n,2)+B(n,1)+B(n,0)); i++)
+		coefficientsMatrix[i] = rand() & 1;
 	int val;
 	for (int i=0; i<e; i++) {
-		val = Evaluate_Solution(n, solutionHigh, solutionLow, Eqs[i]);
-		Eqs[i][0][0] ^= val;
+		val = Evaluate_Solution(n, solutionHigh, solutionLow, i, coefficientsMatrix);
+		coefficientsMatrix[(i+1)*(B(n,2)+B(n,1)+B(n,0))-1] ^= val;
 	}
 }
 
 // Define a function to print solutions obtained from exfes.
 void Report_Solution (uint64_t solutionHigh, uint64_t solutionLow) {
-	printf("    Solution = %016"PRIx64"%016"PRIx64"\n", solutionHigh, solutionLow);
+	printf("    Solution = %016" PRIx64 "%016" PRIx64 "\n", solutionHigh, solutionLow);
 }
 
 // Define a function to check solution.
-void Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, int ***Eqs) {
+void Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, uint8_t *coefficientsMatrix) {
 	int count = 0;
 	for (int i=0; i<e; i++) {
-		int val = Evaluate_Solution(n, solutionHigh, solutionLow, Eqs[i]);
+		int val = Evaluate_Solution(n, solutionHigh, solutionLow, i, coefficientsMatrix);
 		if (val == 0)
 			count += 1;
 	}
@@ -147,9 +99,9 @@ void Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, 
 
 int main (int argc, char **argv) {
 
-	uint32_t m = 17; // M variables will be fixed by exfes before calling libFES.
-	uint32_t n = 80; // Test exfes with n variables.
-	uint32_t e = 72; // Test exfes with e equations.
+	uint32_t m = 17;
+	uint32_t n = 80;
+	uint32_t e = 72;
 
 	int ch;
 	struct option longopts[4] = {
@@ -168,44 +120,39 @@ int main (int argc, char **argv) {
 		}
 	}
 
-	int ***Eqs = Initialize_Equations(n, e); // Set all array elements to zero.
-
-	uint64_t Mask[2] = {0xe0d3cf665fad7012, 0x000000000000e5eb}; // The solver starts searching from the value of mask.
-
+	uint64_t startPointHigh = 0x000000000000e5eb;
+	uint64_t startPointLow = 0xe0d3cf665fad7012;
 	uint64_t solutionHigh = 0;
 	uint64_t solutionLow = 0;
 
-	// Generate a solution randomly.
 	printf("Generate a solution randomly ...\n");
-	uint64_t genSolutionHigh;
-	uint64_t genSolutionLow;
+	uint64_t genSolutionHigh = 0;
+	uint64_t genSolutionLow = 0;
 	Generate_Solution(n, &genSolutionHigh, &genSolutionLow);
-	printf("    Solution = ""%016"PRIx64"%016"PRIx64"\n", genSolutionHigh, genSolutionLow);
+	printf("    Solution = %016" PRIx64 "%016" PRIx64 "\n", genSolutionHigh, genSolutionLow);
 
-	// Generate equations randomly.
-	//printf("Generate equations randomly ...\n");
-	Generate_Equation(n, e, genSolutionHigh, genSolutionLow, Eqs);
-	//Print_Equation(n, e, Eqs);
-
-	// Check generated equations.
-	Check_Solution(n, e, genSolutionHigh, genSolutionLow, Eqs);
-
-	// Solve equations by exfes.
 	uint8_t *coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
-	Transform_Data_Structure_Temp(n, e, coefficientsMatrix, Eqs);
+	Generate_Equation(n, e, genSolutionHigh, genSolutionLow, coefficientsMatrix);
+	Check_Solution(n, e, genSolutionHigh, genSolutionLow, coefficientsMatrix);
+
 	printf("Solve equations by exfes ...\n");
-	int resultCode = exfes(m, n, e, Mask[1], Mask[0], coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
-	printf("    exfes resultCode = %d\n", resultCode);
+	int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
 
-	// Report obtained solutions in uint256 format.
-	Report_Solution(solutionHigh, solutionLow);
+	if (resultCode == 0) {
+		printf("    Found One Solution (resultCode = 0)\n");
+		Report_Solution(solutionHigh, solutionLow);
+		Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
+	}
+	else if (resultCode == -1)
+		printf("    No Possible Solution (resultCode = -1)\n");
+	else if (resultCode == -2)
+		printf("    Interrupted By Other Nodes (resultCode = -2)\n");
+	else if (resultCode == -3)
+		printf("    Invalid Parameters (resultCode = -3)\n");
+	else
+		printf("    Undefined Results\n");
 
-	// Check reported solution.
-	Check_Solution(n, e, genSolutionHigh, genSolutionLow, Eqs);
-
-	Free_Equations(e, Eqs);
 	free(coefficientsMatrix);
-
 	return 0;
 
 }
