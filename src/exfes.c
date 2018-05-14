@@ -25,6 +25,16 @@ int M (uint64_t startPointHigh, uint64_t startPointLow, int index) {
 		return (startPointHigh >> (index - 64)) & 1;
 }
 
+void freeEqs(int ***Eqs, int count_i, int count_j) {
+	for (int i=0; i<count_i; i++) {
+		for (int j=0; j<count_j; j++) {
+			free(Eqs[i][j]);
+		}
+		free(Eqs[i]);
+	}
+	free(Eqs);
+}
+
 void Transform_Data_Structure (int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs) {
 	uint64_t offset = 0;
 	for (int i=0; i<e; i++) {
@@ -159,21 +169,8 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 			break;
 	}
 
-	for (int i=0; i<e; i++) {
-		for (int j=0; j<3; j++) {
-			free(EqsCopy[i][j]);
-		}
-		free(EqsCopy[i]);
-	}
-	free(EqsCopy);
-
-	for (int i=0; i<e; i++) {
-		for (int j=0; j<3; j++) {
-			free(Eqs[i][j]);
-		}
-		free(Eqs[i]);
-	}
-	free(Eqs);
+	freeEqs(EqsCopy, e, 3);
+	freeEqs(Eqs, e, 3);
 
 	if (exfes_ctx.SolCount == 1)
 		return 0;
