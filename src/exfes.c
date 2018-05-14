@@ -25,14 +25,45 @@ int M (uint64_t startPointHigh, uint64_t startPointLow, int index) {
 		return (startPointHigh >> (index - 64)) & 1;
 }
 
-void freeEqs(int ***Eqs, int count_i, int count_j) {
-	for (int i=0; i<count_i; i++) {
-		for (int j=0; j<count_j; j++) {
-			free(Eqs[i][j]);
+void freeEqs(int ***Eqs, int i, int j) {
+	if (j > 0)
+		j -= 1;
+	else {
+		j = 2;
+		i -= 1;
+	}
+	while (i >= 0) {
+		free(Eqs[i][j]);
+		if (j > 0)
+			j -= 1;
+		else {
+			free(Eqs[i]);
+			j = 2;
+			i -= 1;
 		}
-		free(Eqs[i]);
 	}
 	free(Eqs);
+}
+
+int initEqs(int n, int e, int ****EqsPtr) {
+	EqsPtr[0] = calloc(e, sizeof(int **));
+	if (EqsPtr[0] == NULL)
+		return -3;
+	for (int i=0; i<e; i++) {
+		EqsPtr[0][i] = calloc(3, sizeof(int *));
+		if (EqsPtr[0][i] == NULL) {
+			freeEqs(EqsPtr[0], i, 0);
+			return -3;
+		}
+		for (int j=0; j<3; j++) {
+			EqsPtr[0][i][j] = calloc(C(n, j), sizeof(int));
+			if (EqsPtr[0][i][j] == NULL) {
+				freeEqs(EqsPtr[0], i, j);
+				return -3;
+			}
+		}
+	}
+	return 0;
 }
 
 void Transform_Data_Structure (int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs) {
@@ -102,14 +133,10 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 	exfes_ctx.shouldAbortNow = shouldAbortNow;
 
 	// Make a copy of EqsUnmask for masking.
-	int ***Eqs = calloc(e, sizeof(int **));
-	for (int i=0; i<e; i++) {
-		Eqs[i] = calloc(3, sizeof(int *));
-		for (int j=0; j<3; j++) {
-			Eqs[i][j] = calloc(C(n, j), sizeof(int));
-		}
-	}
-	Transform_Data_Structure (n, e, coefficientsMatrix, Eqs);
+	int ***Eqs;
+	if (initEqs(n, e, &Eqs) != 0)
+		return -3;
+	Transform_Data_Structure(n, e, coefficientsMatrix, Eqs);
 
 	// Mask Eqs for a random start point.
 	for (int i=0; i<e; i++) {
@@ -125,12 +152,9 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 			}
 	}
 	// Make a copy of Eqs for evaluating fixed variables.
-	int ***EqsCopy = calloc(e, sizeof(int **));
-	for (int i=0; i<e; i++) {
-		EqsCopy[i] = calloc(3, sizeof(int *));
-		for (int j=0; j<3; j++)
-			EqsCopy[i][j] = malloc(C(n, j) * sizeof(int));
-	}
+	int ***EqsCopy;
+	if (initEqs(n, e, &EqsCopy) != 0)
+		return -3;
 
 	// Partition problem into (1<<n_fixed) sub_problems.
 	int p = n - m;
@@ -169,8 +193,8 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 			break;
 	}
 
-	freeEqs(EqsCopy, e, 3);
-	freeEqs(Eqs, e, 3);
+	freeEqs(EqsCopy, e, 0);
+	freeEqs(Eqs, e, 0);
 
 	if (exfes_ctx.SolCount == 1)
 		return 0;
