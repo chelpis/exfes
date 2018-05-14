@@ -87,14 +87,17 @@ void Report_Solution (uint64_t solutionHigh, uint64_t solutionLow) {
 }
 
 // Define a function to check solution.
-void Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, uint8_t *coefficientsMatrix) {
+bool Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, uint8_t *coefficientsMatrix) {
 	int count = 0;
 	for (int i=0; i<e; i++) {
 		int val = Evaluate_Solution(n, solutionHigh, solutionLow, i, coefficientsMatrix);
 		if (val == 0)
 			count += 1;
 	}
-	printf("    Fitting Equations = %d\n", count);
+	if (count == e)
+		return 1;
+	else
+		return 0;
 }
 
 int main (int argc, char **argv) {
@@ -141,7 +144,7 @@ int main (int argc, char **argv) {
 	if (resultCode == 0) {
 		printf("    Found One Solution (resultCode = 0)\n");
 		Report_Solution(solutionHigh, solutionLow);
-		Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
+		printf("    Check_Solution = %d\n", Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix));
 	}
 	else if (resultCode == -1)
 		printf("    No Possible Solution (resultCode = -1)\n");
