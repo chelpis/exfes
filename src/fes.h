@@ -9,7 +9,7 @@
 #include "idx_LUT.h"
 #include "fes_interface.h"
 
-typedef int*  vector_t ;
+typedef int*  vector_t;
 typedef vector_t* matrix_t;
 typedef uint32_t pck_vector_t;
 
@@ -39,6 +39,7 @@ typedef struct {
 
 typedef quadratic_form* system_t;
 
+void free_vector(vector_t x);
 vector_t init_vector(int n_rows);
 pck_vector_t pack(int n, const vector_t v);
 

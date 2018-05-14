@@ -14,6 +14,10 @@ typedef union {
     uint16_t e[8];
 } Vec4;
 
+void free_vector(vector_t x) {
+  free(x);
+}
+
 vector_t init_vector(int n_rows) {
   return calloc(n_rows, sizeof(int));
 }

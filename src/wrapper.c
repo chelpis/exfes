@@ -90,6 +90,8 @@ void convert_input_equations(const int n, const int degree, int from, int to, in
 
   assert(to-from <= (int) (8*sizeof(pck_vector_t)));
   vector_t x = init_vector(to-from);   // this is used to pack the equations in memory words
+  if (x == NULL)
+	  return; // return something
 
   int set[ n ]; // represent the monomial `m` enumerated below
   for(int j=0; j<n; j++) {
@@ -110,7 +112,7 @@ void convert_input_equations(const int n, const int degree, int from, int to, in
       next_set(n, n, &set[0]); // maintain invariant
     }
   }
-  free(x);
+  free_vector(x);
 }
 
 
