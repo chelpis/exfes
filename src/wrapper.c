@@ -280,7 +280,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   // ---------- deal where the case where there is more equations than what the kernel(s) deals with
 
   pck_vector_t **G = NULL;
-  bool should_free_G = 0;
 
   wrapper_state_t * tester_state = NULL;
 
@@ -302,24 +301,64 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   // the next batches will be used by the tester. They must be in deginvlex order
   idx_lut_t *testing_LUT = idx_LUT;
 
+  bool should_free_G = 0;
   G = calloc(n_batches-1, sizeof(pck_vector_t *));
   if (G == NULL) {
-    err(EX_OSERR, "[fes/wrapper/enumeration/allocate G]");
-  }
-
-  for(int i=1; i<n_batches; i++) {
-    G[i-1] = calloc(N, sizeof(pck_vector_t));
-    if (G[i-1] == NULL) {
-      err(EX_OSERR, "[fes/wrapper/enumeration/allocate G[i]]");
-    }
-    convert_input_equations(n, degree, settings->word_size*i, min(n_eqs, settings->word_size*(i+1)), coeffs, testing_LUT, G[i-1]);
+    if (should_free_F)
+		free(F);
+    if (should_free_LUT)
+      free_LUT(idx_LUT);
+    if (should_free_settings)
+      free(settings);
+    return -3;
   }
   should_free_G = 1;
 
-  // the "tester" needs some internal state
-  if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
-     return -3;
+  int should_free_G_count = -1;
+  for(int i=1; i<n_batches; i++) {
+    G[i-1] = calloc(N, sizeof(pck_vector_t));
+    if (G[i-1] == NULL) {
+      should_free_G_count = i-1;
+	  break;
+    }
+  convert_input_equations(n, degree, settings->word_size*i, min(n_eqs, settings->word_size*(i+1)), coeffs, testing_LUT, G[i-1]);
   }
+  should_free_G_count -= 1;
+  while (should_free_G_count >= 0) {
+	  free(G[should_free_G_count]);
+      should_free_G_count -= 1;
+  }
+  if (should_free_G_count == -1) {
+    if (should_free_G)
+      free(G);
+    if (should_free_F)
+		free(F);
+    if (should_free_LUT)
+      free_LUT(idx_LUT);
+    if (should_free_settings)
+      free(settings);
+    return -3;
+  }
+
+
+  // the "tester" needs some internal state
+  bool should_free_tester_state = 0;
+  if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
+    if (should_free_G) {
+      for(int i=n_batches-1; i>=1; i--) {
+        free(G[i-1]);
+      }
+      free(G);
+    }
+    if (should_free_F)
+		free(F);
+    if (should_free_LUT)
+      free_LUT(idx_LUT);
+    if (should_free_settings)
+      free(settings);
+    return -3;
+  }
+  should_free_tester_state = 1;
 
   tester_state->n = n;
   tester_state->degree = degree;
@@ -345,30 +384,20 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
   // ----------- clean up
 
-  if ( should_free_G ) {
-    int n_batches = n_eqs / settings->word_size;
-    if ( (n_eqs % settings->word_size) > 0 ) {
-      n_batches++;
-    }
-    for(int i=1; i<n_batches; i++) {
+  if (should_free_tester_state)
+    free(tester_state);
+  if (should_free_G) {
+    for(int i=n_batches-1; i>=1; i--) {
       free(G[i-1]);
     }
     free(G);
   }
-
-  if ( tester_state != NULL ) {
-    if ( settings->algorithm == ALGO_FFT ) {
-      free_LUT( tester_state->testing_LUT );
-    }
-    free( tester_state );
-  }
-
-  free_LUT( idx_LUT );
-  free( F );
-
-  if (should_free_settings) {
+  if (should_free_F)
+  	free(F);
+  if (should_free_LUT)
+    free_LUT(idx_LUT);
+  if (should_free_settings)
     free(settings);
-  }
 
   return 0;
 }
