@@ -48,18 +48,18 @@ void freeEqs(int ***Eqs, int i, int j) {
 int initEqs(int n, int e, int ****EqsPtr) {
 	EqsPtr[0] = calloc(e, sizeof(int **));
 	if (EqsPtr[0] == NULL)
-		return -3;
+		return -4;
 	for (int i=0; i<e; i++) {
 		EqsPtr[0][i] = calloc(3, sizeof(int *));
 		if (EqsPtr[0][i] == NULL) {
 			freeEqs(EqsPtr[0], i, 0);
-			return -3;
+			return -4;
 		}
 		for (int j=0; j<3; j++) {
 			EqsPtr[0][i][j] = calloc(C(n, j), sizeof(int));
 			if (EqsPtr[0][i][j] == NULL) {
 				freeEqs(EqsPtr[0], i, j);
-				return -3;
+				return -4;
 			}
 		}
 	}
@@ -135,7 +135,7 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 	// Make a copy of EqsUnmask for masking.
 	int ***Eqs;
 	if (initEqs(n, e, &Eqs) != 0)
-		return -3;
+		return -4;
 	Transform_Data_Structure(n, e, coefficientsMatrix, Eqs);
 
 	// Mask Eqs for a random start point.
@@ -154,7 +154,7 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 	// Make a copy of Eqs for evaluating fixed variables.
 	int ***EqsCopy;
 	if (initEqs(n, e, &EqsCopy) != 0)
-		return -3;
+		return -4;
 
 	// Partition problem into (1<<n_fixed) sub_problems.
 	int p = n - m;
@@ -187,7 +187,7 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 		if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, 0) != 0) {
 			freeEqs(EqsCopy, e, 0);
 			freeEqs(Eqs, e, 0);
-			return -3;
+			return -4;
 		}
 
 		// Determine to early abort or not.

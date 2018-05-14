@@ -234,7 +234,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   if (settings == NULL) {
     settings = init_settings();
     if (settings == NULL)
-		return -3;
+		return -4;
     should_free_settings = 1;
   }
 
@@ -256,7 +256,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 	if (idx_LUT == NULL) {
       if (should_free_settings)
         free(settings);
-      return -3;
+      return -4;
     }
 	should_free_LUT = 1;
     F_size = N;
@@ -273,7 +273,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
       free_LUT(idx_LUT);
     if (should_free_settings)
       free(settings);
-    return -3;
+    return -4;
   }
   should_free_F = 1;
 
@@ -310,7 +310,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
       free_LUT(idx_LUT);
     if (should_free_settings)
       free(settings);
-    return -3;
+    return -4;
   }
   should_free_G = 1;
 
@@ -337,7 +337,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
       free_LUT(idx_LUT);
     if (should_free_settings)
       free(settings);
-    return -3;
+    return -4;
   }
 
 
@@ -356,7 +356,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
       free_LUT(idx_LUT);
     if (should_free_settings)
       free(settings);
-    return -3;
+    return -4;
   }
   should_free_tester_state = 1;
 

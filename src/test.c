@@ -152,6 +152,8 @@ int main (int argc, char **argv) {
 		printf("    Interrupted By Other Nodes (resultCode = -2)\n");
 	else if (resultCode == -3)
 		printf("    Invalid Parameters (resultCode = -3)\n");
+	else if (resultCode == -4)
+		printf("    calloc / alloc Failure (resultCode = -4)\n");
 	else
 		printf("    Undefined Results\n");
 
