@@ -39,8 +39,25 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
 
   // alloc without checks
   LUT_int_t **LUT = (LUT_int_t**) calloc (d, sizeof(LUT_int_t*));
-  for (int i = 0; i < d; i++)
+  if (LUT == NULL)
+	  return NULL;
+  int count_i = -1;
+  for (int i = 0; i < d; i++) {
     LUT[i] = (LUT_int_t*) calloc(n, sizeof(LUT_int_t));
+    if (LUT[i] == NULL) {
+		count_i = i;
+		break;
+	}
+  }
+  count_i -= 1;
+  while (count_i >= 0) {
+    free(LUT[count_i]);
+	count_i -= 1;
+  }
+  if (count_i == -1) {
+	  free(LUT);
+	  return NULL;
+  }
 
   // save pos[0] = 1
   LUT[0][0] = 1;
@@ -72,6 +89,8 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
     LUT[d-1][i] = i+1;
 
   nonconst_lut_t *idx_lut = malloc(sizeof(idx_lut_t));
+  if (idx_lut == NULL)
+	  return NULL;
   idx_lut->n = n;
   idx_lut->d = d;
   idx_lut->LUT = LUT;
