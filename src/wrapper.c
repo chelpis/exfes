@@ -28,7 +28,7 @@ void verbose_print(wrapper_settings_t *settings, const char* fmt, ...) {
 wrapper_settings_t * init_settings() {
   wrapper_settings_t * result = malloc( sizeof(wrapper_settings_t) );
   if ( result == NULL ) {
-    err(EX_OSERR, "impossible to allocate the settings for the wrapper");
+    return NULL;
   }
   result->word_size = 32;
   result->algorithm = ALGO_AUTO;
@@ -125,7 +125,7 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
 
   assert( state->degree < enumerated_degree_bound); // enumerated_degree_bound is defined in fes.h
 
-  uint64_t* corrects_solutions = malloc(sizeof(uint64_t)*size);
+  uint64_t corrects_solutions[1];
   uint64_t current_solution;
   int index_correct_solution = 0;
   int is_correct;
@@ -141,7 +141,7 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
       j++;
     }
     if (is_correct){
-      corrects_solutions[index_correct_solution] = current_solution;
+      corrects_solutions[0] = current_solution;
       index_correct_solution++;
 	  break; // Early abort.
     }
@@ -155,8 +155,6 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
     // report solution to the actual callback, and ask whether it wants to keep going
     answer_found = (*(state->callback))(state->callback_state, index_correct_solution, corrects_solutions);
   }
-
-  free(corrects_solutions);
 
   return answer_found;
 }
@@ -234,7 +232,9 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
   bool should_free_settings = 0;
   if (settings == NULL) {
-    settings = init_settings(); // XXX
+    settings = init_settings();
+    if (settings == NULL)
+		return -3;
     should_free_settings = 1;
   }
 
@@ -249,11 +249,16 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   idx_lut_t* idx_LUT = NULL;
   size_t F_size = -1;
 
+  bool should_free_LUT = 0;
   switch( settings->algorithm ) {
   case ALGO_ENUMERATION:
     idx_LUT = init_deginvlex_LUT(n, degree);
-	if (idx_LUT == NULL)
+	if (idx_LUT == NULL) {
+      if (should_free_settings)
+        free(settings);
       return -3;
+    }
+	should_free_LUT = 1;
     F_size = N;
     break;
 
@@ -261,10 +266,16 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
     err(EX_OSERR, "internal bug (settings not chosen ?!?)");
   }
 
+  bool should_free_F = 0;
   F = malloc(F_size * sizeof(pck_vector_t));
   if (F == NULL) {
-    err(EX_OSERR, "[fes/wrapper/enumeration/allocate F]");
+    if (should_free_LUT)
+      free_LUT(idx_LUT);
+    if (should_free_settings)
+      free(settings);
+    return -3;
   }
+  should_free_F = 1;
 
   // ---------- deal where the case where there is more equations than what the kernel(s) deals with
 
@@ -273,63 +284,55 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
   wrapper_state_t * tester_state = NULL;
 
-  if ( n_eqs <= settings->word_size ) {
-    // this is the simple case where the enumeration itself is enough
-    // prepare the input for the enumeration
-    verbose_print(settings, "wordsize (=%d) >= #equations (=%d) --> using core fixed-size algorithm directly", settings->word_size, n_eqs );
-    convert_input_equations( n, degree, 0, n_eqs, coeffs, idx_LUT, F );
+  // if there are more equations that what we can enumerate simultaneously,
+  // we just deal with the first `enumerated_equations`, and then check
+  // any eventual solutions of these against the remaining equations
 
-  } else {
-     // if there are more equations that what we can enumerate simultaneously,
-     // we just deal with the first `enumerated_equations`, and then check
-     // any eventual solutions of these against the remaining equations
+  verbose_print(settings, "wordsize (=%d) < #equations (=%d) --> wrapping tester around core fixed-size algorithm directly", settings->word_size, n_eqs );
 
-     verbose_print(settings, "wordsize (=%d) < #equations (=%d) --> wrapping tester around core fixed-size algorithm directly", settings->word_size, n_eqs );
-
-     // we split the equations into "batches" of `settings->word_size` each
-     int n_batches = n_eqs / settings->word_size;
-     if ( (n_eqs % settings->word_size) > 0 ) {
-       n_batches++;
-     }
-
-     // the first batch goes into the enumeration code
-     convert_input_equations(n, degree, 0, settings->word_size, coeffs, idx_LUT, F); // prepare the input for the enumeration
-
-     // the next batches will be used by the tester. They must be in deginvlex order
-     idx_lut_t *testing_LUT = idx_LUT;
-
-     G = calloc(n_batches-1, sizeof(pck_vector_t *));
-     if (G == NULL) {
-       err(EX_OSERR, "[fes/wrapper/enumeration/allocate G]");
-     }
-
-     for(int i=1; i<n_batches; i++) {
-       G[i-1] = calloc(N, sizeof(pck_vector_t));
-       if (G[i-1] == NULL) {
-	 err(EX_OSERR, "[fes/wrapper/enumeration/allocate G[i]]");
-       }
-       convert_input_equations(n, degree, settings->word_size*i, min(n_eqs, settings->word_size*(i+1)), coeffs, testing_LUT, G[i-1]);
-     }
-     should_free_G = 1;
-
-    // the "tester" needs some internal state
-    if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
-       return -3;
-    }
-
-    tester_state->n = n;
-    tester_state->degree = degree;
-    tester_state->n_batches = n_batches-1;
-    tester_state->G = G;
-    tester_state->testing_LUT = testing_LUT;
-
-    tester_state->callback = callback;
-    tester_state->callback_state = callback_state;
-    //must_free_tester_state = true;
-
-    callback = solution_tester;
-    callback_state = (void *) tester_state;
+  // we split the equations into "batches" of `settings->word_size` each
+  int n_batches = n_eqs / settings->word_size;
+  if ( (n_eqs % settings->word_size) > 0 ) {
+    n_batches++;
   }
+
+  // the first batch goes into the enumeration code
+  convert_input_equations(n, degree, 0, settings->word_size, coeffs, idx_LUT, F); // prepare the input for the enumeration
+
+  // the next batches will be used by the tester. They must be in deginvlex order
+  idx_lut_t *testing_LUT = idx_LUT;
+
+  G = calloc(n_batches-1, sizeof(pck_vector_t *));
+  if (G == NULL) {
+    err(EX_OSERR, "[fes/wrapper/enumeration/allocate G]");
+  }
+
+  for(int i=1; i<n_batches; i++) {
+    G[i-1] = calloc(N, sizeof(pck_vector_t));
+    if (G[i-1] == NULL) {
+      err(EX_OSERR, "[fes/wrapper/enumeration/allocate G[i]]");
+    }
+    convert_input_equations(n, degree, settings->word_size*i, min(n_eqs, settings->word_size*(i+1)), coeffs, testing_LUT, G[i-1]);
+  }
+  should_free_G = 1;
+
+  // the "tester" needs some internal state
+  if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
+     return -3;
+  }
+
+  tester_state->n = n;
+  tester_state->degree = degree;
+  tester_state->n_batches = n_batches-1;
+  tester_state->G = G;
+  tester_state->testing_LUT = testing_LUT;
+
+  tester_state->callback = callback;
+  tester_state->callback_state = callback_state;
+  //must_free_tester_state = true;
+
+  callback = solution_tester;
+  callback_state = (void *) tester_state;
 
   // ------------ start actual computation
   verbose_print(settings, "starting kernel");
