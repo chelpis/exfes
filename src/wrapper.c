@@ -91,7 +91,7 @@ void convert_input_equations(const int n, const int degree, int from, int to, in
   assert(to-from <= (int) (8*sizeof(pck_vector_t)));
   vector_t x = init_vector(to-from);   // this is used to pack the equations in memory words
   if (x == NULL)
-	  return; // return something
+	  return; // !!!!
 
   int set[ n ]; // represent the monomial `m` enumerated below
   for(int j=0; j<n; j++) {
@@ -230,14 +230,7 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
 
 // -------------------------------------
 
-void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
-  if (n > 63) {
-    fprintf(stderr, "fes: Your equations have more than 63 variables, but the FES library handles at most 63.\n");
-    fprintf(stderr, "fes: You may want to specialize (n-63) variables to fit into the constraints.\n");
-    fprintf(stderr, "fes: (also, do you realize that it will take a **LONG** time?)\n");
-    fprintf(stderr, "fes: aborting.\n");
-    return;
-  }
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
 
   bool should_free_settings = 0;
   if (settings == NULL) {
@@ -259,6 +252,8 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
   switch( settings->algorithm ) {
   case ALGO_ENUMERATION:
     idx_LUT = init_deginvlex_LUT(n, degree);
+	if (idx_LUT == NULL)
+      return -3;
     F_size = N;
     break;
 
@@ -302,9 +297,6 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
      // the next batches will be used by the tester. They must be in deginvlex order
      idx_lut_t *testing_LUT = idx_LUT;
-     if (settings->algorithm == ALGO_FFT) {
-       testing_LUT = init_deginvlex_LUT(n, degree);
-     }
 
      G = calloc(n_batches-1, sizeof(pck_vector_t *));
      if (G == NULL) {
@@ -322,8 +314,7 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
 
     // the "tester" needs some internal state
     if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
-       err(EX_OSERR, "[fes/wrapper/allocate wrapper]");
-       return;
+       return -3;
     }
 
     tester_state->n = n;
@@ -375,4 +366,6 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
   if (should_free_settings) {
     free(settings);
   }
+
+  return 0;
 }

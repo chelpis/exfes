@@ -184,7 +184,11 @@ int exfes (uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquati
 			npartial -= 1;
 		}
 
-		exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, 0);
+		if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx, 0) != 0) {
+			freeEqs(EqsCopy, e, 0);
+			freeEqs(Eqs, e, 0);
+			return -3;
+		}
 
 		// Determine to early abort or not.
 		if (exfes_ctx.SolCount == 1)
