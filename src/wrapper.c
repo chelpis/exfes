@@ -260,11 +260,6 @@ void exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***
     F_size = N;
     break;
 
-  case ALGO_FFT:
-    idx_LUT = init_lex_LUT(n);
-    F_size = 1 << n;
-    break;
-
   default:
     err(EX_OSERR, "internal bug (settings not chosen ?!?)");
   }

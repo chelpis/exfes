@@ -34,25 +34,6 @@ uint64_t n_monomials(int n, int d) {
 }
 
 
-const idx_lut_t *init_lex_LUT(int n) {
-
-  LUT_int_t **LUT = (LUT_int_t**) calloc (n, sizeof(LUT_int_t*));
-  for (int i = 0; i < n; i++)
-    LUT[i] = (LUT_int_t*) calloc(n, sizeof(LUT_int_t));
-
-  for(int i=0; i<n; i++)
-    for(int j=0; j<n; j++)
-      LUT[i][j] = (1ll << j);
-
-  nonconst_lut_t *idx_lut = malloc(sizeof(idx_lut_t));
-  idx_lut->n = n;
-  idx_lut->d = n;
-  idx_lut->LUT = LUT;
-
-  return (idx_lut_t *) idx_lut;
-}
-
-
 const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   const int errors = n - 1 - d; // possible errors to correct
 
