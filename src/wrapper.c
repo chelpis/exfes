@@ -25,11 +25,7 @@ void verbose_print(wrapper_settings_t *settings, const char* fmt, ...) {
   va_end(args);
 }
 
-wrapper_settings_t * init_settings() {
-  wrapper_settings_t * result = malloc( sizeof(wrapper_settings_t) );
-  if ( result == NULL ) {
-    return NULL;
-  }
+void init_settings(wrapper_settings_t *result) {
   result->word_size = 32;
   result->algorithm = ALGO_AUTO;
   result->algo_auto_degree_bound = 10;
@@ -43,7 +39,6 @@ wrapper_settings_t * init_settings() {
 #endif
 
   result->verbose = 0;
-  return result;
 }
 
 
@@ -230,12 +225,8 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
 
 int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state) {
 
-  bool should_free_settings = 0;
-  wrapper_settings_t *settings = init_settings();
-  if (settings == NULL)
-    return -4;
-  should_free_settings = 1;
-
+  wrapper_settings_t settings[1];
+  init_settings(settings);
   choose_settings(settings, n, n_eqs, degree);
 
   //bool must_free_tester_state = false;
@@ -252,8 +243,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   case ALGO_ENUMERATION:
     idx_LUT = init_deginvlex_LUT(n, degree);
 	if (idx_LUT == NULL) {
-      if (should_free_settings)
-        free(settings);
       return -4;
     }
 	should_free_LUT = 1;
@@ -269,8 +258,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   if (F == NULL) {
     if (should_free_LUT)
       free_LUT(idx_LUT);
-    if (should_free_settings)
-      free(settings);
     return -4;
   }
   should_free_F = 1;
@@ -306,8 +293,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 		free(F);
     if (should_free_LUT)
       free_LUT(idx_LUT);
-    if (should_free_settings)
-      free(settings);
     return -4;
   }
   should_free_G = 1;
@@ -333,8 +318,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 		free(F);
     if (should_free_LUT)
       free_LUT(idx_LUT);
-    if (should_free_settings)
-      free(settings);
     return -4;
   }
 
@@ -352,8 +335,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 		free(F);
     if (should_free_LUT)
       free_LUT(idx_LUT);
-    if (should_free_settings)
-      free(settings);
     return -4;
   }
   should_free_tester_state = 1;
@@ -394,8 +375,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   	free(F);
   if (should_free_LUT)
     free_LUT(idx_LUT);
-  if (should_free_settings)
-    free(settings);
 
   return 0;
 }

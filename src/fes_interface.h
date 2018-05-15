@@ -25,7 +25,7 @@ typedef struct {
 */
 int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state);
 
-wrapper_settings_t * init_settings();
-void choose_settings( wrapper_settings_t *s, int n, int n_eqs, int degree);
+void init_settings(wrapper_settings_t *result);
+void choose_settings(wrapper_settings_t *s, int n, int n_eqs, int degree);
 
 #endif

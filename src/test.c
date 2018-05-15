@@ -121,7 +121,7 @@ void Generate_Special_StartPoint (int m, int n, uint64_t solutionHigh, uint64_t 
 	startPointHigh[0] = solutionHigh;
 	startPointLow[0] = solutionLow;
 	if ((hardness >= 64 - m) || (hardness > n) || (hardness < 0)) {
-		printf("Invalid value of hardness!");
+		printf("Invalid value of hardness!\n");
 		return;
 	}
 	uint64_t tmp = startPointLow[0] % ((uint64_t)1 << m);
