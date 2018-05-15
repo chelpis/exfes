@@ -228,15 +228,13 @@ void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_cal
 
 // -------------------------------------
 
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state) {
 
   bool should_free_settings = 0;
-  if (settings == NULL) {
-    settings = init_settings();
-    if (settings == NULL)
-		return -4;
-    should_free_settings = 1;
-  }
+  wrapper_settings_t *settings = init_settings();
+  if (settings == NULL)
+    return -4;
+  should_free_settings = 1;
 
   choose_settings(settings, n, n_eqs, degree);
 

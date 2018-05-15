@@ -23,7 +23,7 @@ typedef struct {
    coeffs[e][d][m] = coefficient of the m-th monomial of degree d in the e-th equation
    the monomials of each degree are assumed to be in invlex order (i.e. in lex order with reversed variables)
 */
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state, wrapper_settings_t *settings);
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void* callback_state);
 
 wrapper_settings_t * init_settings();
 void choose_settings( wrapper_settings_t *s, int n, int n_eqs, int degree);
