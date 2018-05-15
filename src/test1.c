@@ -109,8 +109,8 @@ int main (int argc, char **argv) {
 	uint32_t m, n, e = 0;
 	uint8_t i, j = 0;
 
-	uint64_t startPointHigh = 0x000000000000e5eb;
-	uint64_t startPointLow = 0xe0d3cf665fad7012;
+	uint64_t startPointHigh = 0;
+	uint64_t startPointLow = 0;
 	uint64_t solutionHigh = 0;
 	uint64_t solutionLow = 0;
 
@@ -120,19 +120,21 @@ int main (int argc, char **argv) {
 	uint32_t successCount = 0;
 	uint32_t failCount = 0;
 	struct timespec last_spec, now_spec;
-	float miliseconds = 0;
+	float totalseconds = 0.0, miliseconds = 0.0;
 
 	for (i = 0; i < 4; i += 1) {
-		for(j = 0; j < 10; j += 1) {
+		for (j = 0; j < 10; ) {
 			clock_gettime(CLOCK_MONOTONIC, &last_spec);
 			m = mArray[i];
 			n = nArray[j];
 			e = n - 2;
 
+			Generate_Solution(n, &startPointHigh, &startPointLow);
 			coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
 			Generate_Equation(n, e, 0, 0, coefficientsMatrix);
 
 			printf("Solve equations by exfes ...\n");
+			printf("numFixedVariables, numVariables, numEquations = %u, %u, %u\n", m, n, e);
 			int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
 
 			if (resultCode == 0) {
@@ -164,7 +166,14 @@ int main (int argc, char **argv) {
 
 			clock_gettime(CLOCK_MONOTONIC, &now_spec);
 			miliseconds = ((now_spec.tv_nsec - last_spec.tv_nsec) / 1.0e6) + (now_spec.tv_sec - last_spec.tv_sec) * 1000;
-			printf("    Elapsed time(ms) = %.3f\n", miliseconds);
+			totalseconds += miliseconds;
+			printf("    Elapsed time(ms) = %.3f / %.3f\n\n", miliseconds, totalseconds);
+
+			if (totalseconds >= 900000.0) {
+				totalseconds = 0.0;
+				clock_gettime(CLOCK_MONOTONIC, &last_spec);
+				j += 1;
+			}
 		}
 	}
 
