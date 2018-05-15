@@ -100,17 +100,50 @@ bool Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, 
 		return 0;
 }
 
+// Encode Function
+uint64_t Encode (uint64_t word) {
+	uint64_t codeword = word ^ (word >> 1);
+	return codeword;
+}
+
+// Decode Function
+uint64_t Decode (uint64_t codeword) {
+	uint64_t word = 0;
+	for (int i=0; i<64; i++) {
+		word ^= codeword;
+		codeword = codeword >> 1;
+	}
+	return word;
+}
+
+// Define a function to generate special startPoint.
+void Generate_Special_StartPoint (int m, int n, uint64_t solutionHigh, uint64_t solutionLow, int hardness, uint64_t *startPointHigh, uint64_t *startPointLow) {
+	startPointHigh[0] = solutionHigh;
+	startPointLow[0] = solutionLow;
+	if ((hardness >= 64 - m) || (hardness > n) || (hardness < 0)) {
+		printf("Invalid value of hardness!");
+		return;
+	}
+	uint64_t tmp = startPointLow[0] % ((uint64_t)1 << m);
+	uint64_t word = Decode(startPointLow[0] >> m);
+	word = (word >> hardness) << hardness;
+	startPointLow[0] = (Encode(word) << m) ^ tmp;
+	printf("    StartPnt = %016" PRIx64 "%016" PRIx64 "\n", startPointHigh[0], startPointLow[0]);
+}
+
 int main (int argc, char **argv) {
 
 	uint32_t m = 17;
 	uint32_t n = 80;
 	uint32_t e = 72;
+	uint32_t h = 0;
 
 	int ch;
-	struct option longopts[4] = {
+	struct option longopts[5] = {
 		{ "m"	, required_argument	, NULL, 'm'	},
 		{ "n"	, required_argument	, NULL, 'n'	},
 		{ "e"	, required_argument	, NULL, 'e'	},
+		{ "h"	, required_argument	, NULL, 'h'	},
 		{ NULL	, 0					, NULL,  0	}
 	};
 
@@ -119,12 +152,11 @@ int main (int argc, char **argv) {
 			case 'm': m = atoi(optarg); break;
 			case 'n': n = atoi(optarg); break;
 			case 'e': e = atoi(optarg); break;
+			case 'h': h = atoi(optarg); break;
 			default: ;
 		}
 	}
 
-	uint64_t startPointHigh = 0x000000000000e5eb;
-	uint64_t startPointLow = 0xe0d3cf665fad7012;
 	uint64_t solutionHigh = 0;
 	uint64_t solutionLow = 0;
 
@@ -137,6 +169,10 @@ int main (int argc, char **argv) {
 	uint8_t *coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
 	Generate_Equation(n, e, genSolutionHigh, genSolutionLow, coefficientsMatrix);
 	Check_Solution(n, e, genSolutionHigh, genSolutionLow, coefficientsMatrix);
+
+	uint64_t startPointHigh = 0;
+	uint64_t startPointLow = 0;
+	Generate_Special_StartPoint(m, n, genSolutionHigh, genSolutionLow, h, &startPointHigh, &startPointLow);
 
 	printf("Solve equations by exfes ...\n");
 	int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
