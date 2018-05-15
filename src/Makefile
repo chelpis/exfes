@@ -12,13 +12,13 @@ test: test.o $(OBJS)
 	$(CC) -o test test.o $(OBJS)
 
 test1: test1.o $(OBJS)
-	$(CC) -o test1 test1.o $(OBJS)
+	$(CC) -fopenmp -o test1 test1.o $(OBJS)
 
 test.o: test.c $(OBJS)
 	$(CC) $(CFLAGS) -c test.c -o test.o
 
 test1.o: test1.c $(OBJS)
-	$(CC) $(CFLAGS) -c test1.c -o test1.o
+	$(CC) $(CFLAGS) -fopenmp -c test1.c -o test1.o
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
