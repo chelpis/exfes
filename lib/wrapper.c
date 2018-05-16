@@ -81,12 +81,12 @@ void next_set(int n, int d, int set[]) {
 }
 
 //  assumes that F (the target array) is already allocated
-void convert_input_equations(const int n, const int degree, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t F[]) {
+int convert_input_equations(const int n, const int degree, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t F[]) {
 
   assert(to-from <= (int) (8*sizeof(pck_vector_t)));
   vector_t x = init_vector(to-from);   // this is used to pack the equations in memory words
   if (x == NULL)
-	  return; // !!!!
+	  return -4;
 
   int set[ n ]; // represent the monomial `m` enumerated below
   for(int j=0; j<n; j++) {
@@ -108,6 +108,7 @@ void convert_input_equations(const int n, const int degree, int from, int to, in
     }
   }
   free_vector(x);
+  return 0;
 }
 
 
@@ -281,7 +282,14 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   }
 
   // the first batch goes into the enumeration code
-  convert_input_equations(n, degree, 0, settings->word_size, coeffs, idx_LUT, F); // prepare the input for the enumeration
+  // prepare the input for the enumeration
+  if (convert_input_equations(n, degree, 0, settings->word_size, coeffs, idx_LUT, F) != 0) {
+    if (should_free_F)
+		free(F);
+    if (should_free_LUT)
+      free_LUT(idx_LUT);
+    return -4;
+  }
 
   // the next batches will be used by the tester. They must be in deginvlex order
   idx_lut_t *testing_LUT = idx_LUT;
