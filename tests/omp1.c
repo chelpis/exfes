@@ -130,11 +130,12 @@ void mainRoutine() {
   uint8_t *coefficientsMatrix = 0;
 
   bool checkSolution = false;
-  double last_time = omp_get_wtime();
-  double totalseconds = 0.0, seconds = 0.0;
+  double totalseconds = 0.0;
 
   for (i = 0; i < 4; i += 1) {
     for (j = 0; j < 10;) {
+      double last_time = omp_get_wtime();
+      double seconds = 0.0;
       m = mArray[i];
       n = nArray[j];
       e = n - 2;

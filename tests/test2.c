@@ -206,7 +206,6 @@ int main (int argc, char **argv) {
 
 		if (totalseconds >= 9000000.0) {
 			totalseconds = 0.0;
-			clock_gettime(CLOCK_MONOTONIC, &last_spec);
 			j += 1;
 		}
 	}
