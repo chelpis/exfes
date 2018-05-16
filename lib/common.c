@@ -3,16 +3,10 @@
 #include <time.h>
 #include <stdint.h>
 #include <assert.h>
-#include <emmintrin.h>
 
 #include "fes.h"
 #include "idx_LUT.h"
 
-
-typedef union {
-    __m128i v;
-    uint16_t e[8];
-} Vec4;
 
 void free_vector(vector_t x) {
   free(x);
@@ -249,11 +243,4 @@ if (d < 6) return;
 
   printf("degree>5 specialization not yet implemented...");
   assert(0);
-}
-
-void print_vec(__m128i foo) {
-  Vec4 bar;
-  bar.v = foo;
-  for(int i=0; i<8; i++)
-    printf("%04x ", bar.e[i]);
 }
