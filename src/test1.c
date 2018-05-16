@@ -102,106 +102,12 @@ bool Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, 
 		return 0;
 }
 
-// int mainRoutine () {
+int main (int argc, char **argv) {
 
-// 	uint32_t mArray[4] = {0, 1, 9, 17};
-// 	uint32_t nArray[10] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
-// 	uint32_t m, n, e = 0;
-// 	uint8_t i, j = 0;
-
-// 	uint64_t startPointHigh = 0;
-// 	uint64_t startPointLow = 0;
-// 	uint64_t solutionHigh = 0;
-// 	uint64_t solutionLow = 0;
-
-// 	uint8_t *coefficientsMatrix = 0;
-
-// 	bool checkSolution = false;
-// 	uint32_t successCount = 0;
-// 	uint32_t failCount = 0;
-// 	struct timespec last_spec, now_spec;
-// 	float totalseconds = 0.0, miliseconds = 0.0;
-
-// 	for (i = 0; i < 4; i += 1) {
-// 		for (j = 0; j < 10; j += 1) {
-// 			clock_gettime(CLOCK_MONOTONIC, &last_spec);
-// 			m = mArray[i];
-// 			n = nArray[j];
-// 			e = n - 2;
-
-// 			Generate_Solution(n, &startPointHigh, &startPointLow);
-// 			coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
-// 			Generate_Equation(n, e, 0, 0, coefficientsMatrix);
-
-// 			printf("Solve equations by exfes ...\n");
-// 			printf("numFixedVariables, numVariables, numEquations = %u, %u, %u\n", m, n, e);
-// 			int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
-
-// 			if (resultCode == 0) {
-// 				printf("    Found One Solution (resultCode = 0)\n");
-// 				Report_Solution(solutionHigh, solutionLow);
-// 				checkSolution = Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
-// 				printf("    Check_Solution = %d\n", checkSolution);
-// 				if (checkSolution) {
-// 					successCount += 1;
-// 				} else {
-// 					printf("    Wrong Solution!!\n");
-// 					failCount += 1;
-// 				}
-// 			} else {
-// 				failCount += 1;
-// 				if (resultCode == -1)
-// 					printf("    No Possible Solution (resultCode = -1)\n");
-// 				else if (resultCode == -2)
-// 					printf("    Interrupted By Other Nodes (resultCode = -2)\n");
-// 				else if (resultCode == -3)
-// 					printf("    Invalid Parameters (resultCode = -3)\n");
-// 				else if (resultCode == -4)
-// 					printf("    calloc / alloc Failure (resultCode = -4)\n");
-// 				else
-// 					printf("    Undefined Results\n");
-// 			}
-
-// 			free(coefficientsMatrix);
-
-// 			clock_gettime(CLOCK_MONOTONIC, &now_spec);
-// 			miliseconds = ((now_spec.tv_nsec - last_spec.tv_nsec) / 1.0e6) + (now_spec.tv_sec - last_spec.tv_sec) * 1000;
-// 			totalseconds += miliseconds;
-// 			printf("    Elapsed time(ms) = %.3f / %.3f\n\n", miliseconds, totalseconds);
-// 			// if (totalseconds >= 900000.0) {
-// 			// 	totalseconds = 0.0;
-// 			// 	clock_gettime(CLOCK_MONOTONIC, &last_spec);
-// 			// 	j += 1;
-// 			// }
-// 		}
-// 	}
-
-// 	printf("\nsuccess = %u\n", successCount);
-// 	printf("fail = %u\n", failCount);
-
-// 	return 0;
-
-// }
-
-// int main (int argc, char **argv) {
-// 	#pragma omp parallel
-// 	{
-// 		mainRoutine();
-// 	}
-
-// 	return 0;
-// }
-
-typedef struct {
-	int code;
-	float miliseconds;
-	uint64_t solutionHigh;
-	uint64_t solutionLow;
-} result_t;
-
-result_t mainRoutine (uint32_t m, uint32_t n) {
-	result_t result;
-	uint32_t e;
+	uint32_t mArray[4] = {0, 1, 9, 17};
+	uint32_t nArray[10] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
+	uint32_t m, n, e = 0;
+	uint8_t i, j = 0;
 
 	uint64_t startPointHigh = 0;
 	uint64_t startPointLow = 0;
@@ -210,78 +116,64 @@ result_t mainRoutine (uint32_t m, uint32_t n) {
 
 	uint8_t *coefficientsMatrix = 0;
 
-	struct timespec last_spec, now_spec;
-	float miliseconds = 0.0;
-
-	clock_gettime(CLOCK_MONOTONIC, &last_spec);
-	e = n - 2;
-
-	Generate_Solution(n, &startPointHigh, &startPointLow);
-	coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
-	Generate_Equation(n, e, 0, 0, coefficientsMatrix);
-
-	int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
-
-	if (resultCode == 0) {
-		bool checkSolution;
-
-		checkSolution = Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
-		if (checkSolution) {
-			result.solutionHigh = solutionHigh;
-			result.solutionLow = solutionLow;
-		} else {
-			resultCode = -5;
-		}
-	}
-	result.code = resultCode;
-
-	free(coefficientsMatrix);
-
-	clock_gettime(CLOCK_MONOTONIC, &now_spec);
-	miliseconds = ((now_spec.tv_nsec - last_spec.tv_nsec) / 1.0e6) + (now_spec.tv_sec - last_spec.tv_sec) * 1000;
-	result.miliseconds = miliseconds;
-
-	return result;
-}
-
-int main (int argc, char **argv) {
-
-	uint32_t mArray[4] = {0, 1, 9, 17};
-	uint32_t nArray[10] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
-
+	bool checkSolution = false;
 	uint32_t successCount = 0;
 	uint32_t failCount = 0;
-	float totalseconds = 0.0;
-	#pragma omp parallel for collapse(2)
-	for (int i = 0; i < 4; i += 1) {
-		for (int j = 0; j < 10; j += 1) {
-			result_t result = mainRoutine(mArray[i], nArray[j]);
-			
-			if (result.code == 0) {
-				successCount += 1;
+	struct timespec last_spec, now_spec;
+	float totalseconds = 0.0, miliseconds = 0.0;
+
+	for (i = 0; i < 4; i += 1) {
+		for (j = 0; j < 10; ) {
+			clock_gettime(CLOCK_MONOTONIC, &last_spec);
+			m = mArray[i];
+			n = nArray[j];
+			e = n - 2;
+
+			Generate_Solution(n, &startPointHigh, &startPointLow);
+			coefficientsMatrix = (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
+			Generate_Equation(n, e, 0, 0, coefficientsMatrix);
+
+			printf("Solve equations by exfes ...\n");
+			printf("numFixedVariables, numVariables, numEquations = %u, %u, %u\n", m, n, e);
+			int resultCode = exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix, otherNodeReady, &solutionHigh, &solutionLow);
+
+			if (resultCode == 0) {
 				printf("    Found One Solution (resultCode = 0)\n");
-				Report_Solution(result.solutionHigh, result.solutionLow);
+				Report_Solution(solutionHigh, solutionLow);
+				checkSolution = Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
+				printf("    Check_Solution = %d\n", checkSolution);
+				if (checkSolution) {
+					successCount += 1;
+				} else {
+					printf("    Wrong Solution!!\n");
+					failCount += 1;
+				}
 			} else {
 				failCount += 1;
-				if (result.code == -1)
+				if (resultCode == -1)
 					printf("    No Possible Solution (resultCode = -1)\n");
-				else if (result.code == -2)
+				else if (resultCode == -2)
 					printf("    Interrupted By Other Nodes (resultCode = -2)\n");
-				else if (result.code == -3)
+				else if (resultCode == -3)
 					printf("    Invalid Parameters (resultCode = -3)\n");
-				else if (result.code == -4)
+				else if (resultCode == -4)
 					printf("    calloc / alloc Failure (resultCode = -4)\n");
 				else
 					printf("    Undefined Results\n");
 			}
-			
-			totalseconds += result.miliseconds;
-			printf("    Elapsed time(ms) = %.3f / %.3f\n\n", result.miliseconds, totalseconds);
-			// if (totalseconds >= 900000.0) {
-			// 	totalseconds = 0.0;
-			// 	clock_gettime(CLOCK_MONOTONIC, &last_spec);
-			// 	j += 1;
-			// }
+
+			free(coefficientsMatrix);
+
+			clock_gettime(CLOCK_MONOTONIC, &now_spec);
+			miliseconds = ((now_spec.tv_nsec - last_spec.tv_nsec) / 1.0e6) + (now_spec.tv_sec - last_spec.tv_sec) * 1000;
+			totalseconds += miliseconds;
+			printf("    Elapsed time(ms) = %.3f / %.3f\n\n", miliseconds, totalseconds);
+
+			if (totalseconds >= 900000.0) {
+				totalseconds = 0.0;
+				clock_gettime(CLOCK_MONOTONIC, &last_spec);
+				j += 1;
+			}
 		}
 	}
 
