@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <err.h>
 #include <stdarg.h>
 #include <sysexits.h>
 
@@ -240,19 +239,12 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   size_t F_size = -1;
 
   bool should_free_LUT = 0;
-  switch( settings->algorithm ) {
-  case ALGO_ENUMERATION:
     idx_LUT = init_deginvlex_LUT(n, degree);
 	if (idx_LUT == NULL) {
       return -4;
     }
 	should_free_LUT = 1;
     F_size = N;
-    break;
-
-  default:
-    err(EX_OSERR, "internal bug (settings not chosen ?!?)");
-  }
 
   bool should_free_F = 0;
   F = malloc(F_size * sizeof(pck_vector_t));
