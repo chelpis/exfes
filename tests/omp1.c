@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <inttypes.h>
+#include <omp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -129,12 +130,11 @@ void mainRoutine() {
   uint8_t *coefficientsMatrix = 0;
 
   bool checkSolution = false;
-  struct timespec last_spec, now_spec;
-  float totalseconds = 0.0, miliseconds = 0.0;
+  double last_time = omp_get_wtime();
+  double totalseconds = 0.0, seconds = 0.0;
 
   for (i = 0; i < 4; i += 1) {
-    for (j = 0; j < 10; j += 1) {
-      clock_gettime(CLOCK_MONOTONIC, &last_spec);
+    for (j = 0; j < 10;) {
       m = mArray[i];
       n = nArray[j];
       e = n - 2;
@@ -182,15 +182,12 @@ void mainRoutine() {
 
       free(coefficientsMatrix);
 
-      clock_gettime(CLOCK_MONOTONIC, &now_spec);
-      miliseconds = ((now_spec.tv_nsec - last_spec.tv_nsec) / 1.0e6) +
-                    (now_spec.tv_sec - last_spec.tv_sec) * 1000;
-      totalseconds += miliseconds;
-      printf("    Elapsed time(ms) = %.3f /%.3f\n\n", miliseconds,
-             totalseconds);
-      if (totalseconds >= 900000.0) {
+      seconds = omp_get_wtime() - last_time;
+      totalseconds += seconds;
+      printf("    Elapsed time(s) = %.3f /%.3f\n\n", seconds, totalseconds);
+      if (totalseconds >= 900.0) {
         totalseconds = 0.0;
-        clock_gettime(CLOCK_MONOTONIC, &last_spec);
+        last_time = omp_get_wtime();
         j += 1;
       }
     }
