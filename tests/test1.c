@@ -74,6 +74,8 @@ int Evaluate_Solution (int n, uint64_t solutionHigh, uint64_t solutionLow, int i
 
 // Define a function to randomly generate equations that fit the generated solution.
 void Generate_Equation (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, uint8_t *coefficientsMatrix) {
+        (void) solutionHigh;
+        (void) solutionLow;
 	for (int i=0; i<e*(B(n,2)+B(n,1)+B(n,0)); i++)
 		coefficientsMatrix[i] = rand() & 1;
 	// int val;
@@ -103,6 +105,9 @@ bool Check_Solution (int n, int e, uint64_t solutionHigh, uint64_t solutionLow, 
 }
 
 int main (int argc, char **argv) {
+
+        (void) argc;
+        (void) argv;
 
 	uint32_t mArray[4] = {0, 1, 9, 17};
 	uint32_t nArray[10] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};

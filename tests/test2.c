@@ -134,6 +134,8 @@ void Generate_Special_StartPoint (int m, int n, uint64_t solutionHigh, uint64_t 
 }
 
 int main (int argc, char **argv) {
+        (void) argc;
+        (void) argv;
 
 	uint32_t mArray[4] = {0, 1, 9, 17};
 	uint32_t nArray[4] = {56, 64, 72, 80};
