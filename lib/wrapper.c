@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <sysexits.h>
 
 #include "fes.h"
 
