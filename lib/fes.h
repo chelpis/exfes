@@ -55,7 +55,5 @@ void free_system(int n, int n_eqs, system_t f);
 
 #include "all_functions.h"
 
-void print_vec(__m128i foo);
-
 
 #endif
