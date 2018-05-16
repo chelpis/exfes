@@ -22,7 +22,7 @@ SAMPLE = sample1
 
 all: $(SAMPLE) $(TESTS)
 
-$(SAMPLE): %:objs/sample/%.o $(OBJS) | DIRS
+$(SAMPLE): %:objs/samples/%.o $(OBJS) | DIRS
 	@echo 'Linking $@...'
 	$(CC) -o bin/$@ $< $(OBJS)
 
@@ -34,7 +34,7 @@ objs/tests/%.o: tests/%.c $(OBJS) | DIRS
 	@echo 'Building $@...'
 	$(CC) $(CFLAGS) -c $< -o $@
 
-objs/sample/%.o: sample/%.c $(OBJS) | DIRS
+objs/samples/%.o: samples/%.c $(OBJS) | DIRS
 	@echo 'Building $@...'
 	$(CC) $(CFLAGS) -c $< -o $@
 
@@ -46,7 +46,7 @@ DIRS:
 	@mkdir -p objs
 	@mkdir -p objs/lib
 	@mkdir -p objs/tests
-	@mkdir -p objs/sample
+	@mkdir -p objs/samples
 	@mkdir -p bin
 
 .PHONY: clean
