@@ -1,6 +1,8 @@
 #ifndef MY_MEMORY_H
 #define MY_MEMORY_H
 
-void *mycalloc(size_t num, size_t size, int retry);
+#include <stdlib.h>
+
+void *mycalloc(size_t num, size_t size, size_t num_max_retries);
 
 #endif

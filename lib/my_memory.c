@@ -1,15 +1,9 @@
+#include "my_memory.h"
 #include <stdlib.h>
 
-void *mycalloc(size_t num, size_t size, int retry) {
-  //if (rand() % 100 == 0)
-    //return NULL;
-  void *ret;
-  while (retry > 0) {
-    ret = calloc(num, size);
-    if (ret == NULL)
-      retry -= 1;
-    else
-      retry = 0;
-  }
-  return ret;
+void *mycalloc(size_t num, size_t size, size_t num_max_retries) {
+    void *p = calloc(num, size);
+    if (p) return p;
+    if (num_max_retries == 0) return 0;
+    return mycalloc(num, size, num_max_retries - 1);
 }
