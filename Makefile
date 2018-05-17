@@ -17,11 +17,13 @@ my_memory.o
 
 OBJS = $(foreach o,$(LIB_OBJS),objs/lib/$(o))
 
-TESTS = test1 test2 test3 omp1
+SCRIPTS = test5.sh test6.sh
+
+TESTS = test1 test2 test3 test4 test5 test6
 
 SAMPLE = sample1
 
-all: $(SAMPLE) $(TESTS)
+all: $(SAMPLE) $(TESTS) $(SCRIPTS)
 
 $(SAMPLE): %:objs/samples/%.o $(OBJS) | DIRS
 	@echo 'Linking $@...'
@@ -42,6 +44,9 @@ objs/samples/%.o: samples/%.c $(OBJS) | DIRS
 objs/lib/%.o: lib/%.c | DIRS
 	@echo 'Building $@...'
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(SCRIPTS):
+	@cp -f tests/$@ bin/$@
 
 DIRS:
 	@mkdir -p objs

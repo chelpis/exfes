@@ -1,4 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
+#define M_SIZE 4
+#define N_SIZE 5
 
 #include <inttypes.h>
 #include <omp.h>
@@ -12,6 +14,7 @@
 
 uint32_t successCount = 0;
 uint32_t failCount = 0;
+uint32_t errorCount = 0;
 
 // Define the binomial function to calculate number of terms in different
 // degrees.
@@ -97,8 +100,8 @@ void Generate_Equation(int n, int e, uint64_t solutionHigh,
 
 // Define a function to print solutions obtained from exfes.
 void Report_Solution(uint64_t solutionHigh, uint64_t solutionLow) {
-  printf("    Solution = %016" PRIx64 "%016" PRIx64 "\n", solutionHigh,
-         solutionLow);
+  printf("t[%d]     Solution = %016" PRIx64 "%016" PRIx64 "\n",
+         omp_get_thread_num(), solutionHigh, solutionLow);
 }
 
 // Define a function to check solution.
@@ -117,8 +120,8 @@ bool Check_Solution(int n, int e, uint64_t solutionHigh, uint64_t solutionLow,
 }
 
 void mainRoutine() {
-  uint32_t mArray[4] = {0, 1, 9, 17};
-  uint32_t nArray[10] = {25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
+  uint32_t mArray[M_SIZE] = {0, 1, 9, 17};
+  uint32_t nArray[N_SIZE] = {24, 25, 26, 27, 28};
   uint32_t m, n, e = 0;
   uint8_t i, j = 0;
 
@@ -132,8 +135,8 @@ void mainRoutine() {
   bool checkSolution = false;
   double totalseconds = 0.0;
 
-  for (i = 0; i < 4; i += 1) {
-    for (j = 0; j < 10;) {
+  for (i = 0; i < M_SIZE; i += 1) {
+    for (j = 0; j < N_SIZE;) {
       double last_time = omp_get_wtime();
       double seconds = 0.0;
       m = mArray[i];
@@ -145,50 +148,64 @@ void mainRoutine() {
           (uint8_t *)calloc(e * (B(n, 2) + B(n, 1) + B(n, 0)), sizeof(uint8_t));
       Generate_Equation(n, e, 0, 0, coefficientsMatrix);
 
-      printf("Solve equations by exfes ...\n");
-      printf("numFixedVariables, numVariables, numEquations = %u, %u, %u\n", m,
-             n, e);
+      printf("t[%d] Solve equations by exfes ...\n", omp_get_thread_num());
+      printf(
+          "t[%d] numFixedVariables, numVariables, numEquations = %u, %u, %u\n",
+          omp_get_thread_num(), m, n, e);
       int resultCode =
           exfes(m, n, e, startPointHigh, startPointLow, coefficientsMatrix,
                 otherNodeReady, &solutionHigh, &solutionLow);
 
       if (resultCode == 0) {
-        printf("    Found One Solution (resultCode = 0)\n");
+        printf("t[%d]     Found One Solution (resultCode = 0)\n",
+               omp_get_thread_num());
         Report_Solution(solutionHigh, solutionLow);
         checkSolution =
             Check_Solution(n, e, solutionHigh, solutionLow, coefficientsMatrix);
-        printf("    Check_Solution= %d\n", checkSolution);
+        printf("t[%d]     Check_Solution= %d\n", omp_get_thread_num(),
+               checkSolution);
         if (checkSolution) {
 #pragma omp atomic update
           successCount += 1;
         } else {
-          printf("    Wrong Solution!!\n");
+          printf("t[%d]     Wrong Solution!!\n", omp_get_thread_num());
 #pragma omp atomic update
-          failCount += 1;
+          errorCount += 1;
         }
-      } else {
+      } else if (resultCode == -1) {
 #pragma omp atomic update
         failCount += 1;
-        if (resultCode == -1)
-          printf("    No Possible Solution(resultCode = -1)\n");
-        else if (resultCode == -2)
-          printf("    Interrupted By Other Nodes (resultCode = -2)\n");
-        else if (resultCode == -3)
-          printf("    InvalidParameters (resultCode = -3)\n");
-        else if (resultCode == -4)
-          printf("    calloc / alloc Failure(resultCode = -4)\n");
-        else
-          printf("    Undefined Results\n");
+        printf("t[%d]     No Possible Solution(resultCode = -1)\n",
+               omp_get_thread_num());
+      } else if (resultCode == -2) {
+#pragma omp atomic update
+        errorCount += 1;
+        printf("t[%d]     Interrupted By Other Nodes (resultCode = -2)\n",
+               omp_get_thread_num());
+      } else if (resultCode == -3) {
+#pragma omp atomic update
+        errorCount += 1;
+        printf("t[%d]     InvalidParameters (resultCode = -3)\n",
+               omp_get_thread_num());
+      } else if (resultCode == -4) {
+#pragma omp atomic update
+        errorCount += 1;
+        printf("t[%d]     calloc / alloc Failure(resultCode = -4)\n",
+               omp_get_thread_num());
+      } else {
+#pragma omp atomic update
+        errorCount += 1;
+        printf("t[%d]     Undefined Results\n", omp_get_thread_num());
       }
 
       free(coefficientsMatrix);
 
       seconds = omp_get_wtime() - last_time;
       totalseconds += seconds;
-      printf("    Elapsed time(s) = %.3f /%.3f\n\n", seconds, totalseconds);
-      if (totalseconds >= 900.0) {
+      printf("t[%d]     Elapsed time(s) = %.3f /%.3f\n\n", omp_get_thread_num(),
+             seconds, totalseconds);
+      if (totalseconds >= 1800.0) {
         totalseconds = 0.0;
-        last_time = omp_get_wtime();
         j += 1;
       }
     }
@@ -204,6 +221,7 @@ int main(int argc, char **argv) {
 
   printf("\nsuccess = %u\n", successCount);
   printf("fail = %u\n", failCount);
+  printf("error = %u\n", errorCount);
 
   return 0;
 }

@@ -1,0 +1,1 @@
+env OMP_NUM_THREADS=4 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./bin/test6
