@@ -6,6 +6,7 @@
 
 #include "fes.h"
 #include "idx_LUT.h"
+#include "my_memory.h"
 
 
 void free_vector(vector_t x) {
@@ -13,7 +14,7 @@ void free_vector(vector_t x) {
 }
 
 vector_t init_vector(int n_rows) {
-  return calloc(n_rows, sizeof(int));
+  return mycalloc(n_rows, sizeof(int), 10);
 }
 
 pck_vector_t pack(int n, const vector_t v) {

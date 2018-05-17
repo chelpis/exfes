@@ -17,6 +17,7 @@
 #include "idx_LUT.h"
 
 #include "binomials.h"
+#include "my_memory.h"
 
 typedef struct {
   LUT_int_t ** LUT;
@@ -37,15 +38,14 @@ uint64_t n_monomials(int n, int d) {
 const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   const int errors = n - 1 - d; // possible errors to correct
 
-  // alloc without checks
-  LUT_int_t **LUT = (LUT_int_t**) calloc (d, sizeof(LUT_int_t*));
+  LUT_int_t **LUT = (LUT_int_t**)mycalloc(d, sizeof(LUT_int_t*), 10);
   if (LUT == NULL)
 	  return NULL;
   int count_i = -1;
   for (int i = 0; i < d; i++) {
-    LUT[i] = (LUT_int_t*) calloc(n, sizeof(LUT_int_t));
+    LUT[i] = (LUT_int_t*)mycalloc(n, sizeof(LUT_int_t), 10);
     if (LUT[i] == NULL) {
-		count_i = i;
+      count_i = i;
 		break;
 	}
   }
@@ -88,7 +88,7 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   for (int i = 0; i < n-(d-1); i++)
     LUT[d-1][i] = i+1;
 
-  nonconst_lut_t *idx_lut = malloc(sizeof(idx_lut_t));
+  nonconst_lut_t *idx_lut = (nonconst_lut_t *)mycalloc(1, sizeof(idx_lut_t), 10);
   if (idx_lut == NULL)
 	  return NULL;
   idx_lut->n = n;

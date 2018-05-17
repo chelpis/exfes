@@ -7,7 +7,7 @@
 #include <stdarg.h>
 
 #include "fes.h"
-
+#include "my_memory.h"
 
 uint64_t timeSecondStep = 0;
 
@@ -246,7 +246,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
     F_size = N;
 
   bool should_free_F = 0;
-  F = malloc(F_size * sizeof(pck_vector_t));
+  F = mycalloc(1, F_size * sizeof(pck_vector_t), 10);
   if (F == NULL) {
     if (should_free_LUT)
       free_LUT(idx_LUT);
@@ -286,7 +286,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   idx_lut_t *testing_LUT = idx_LUT;
 
   bool should_free_G = 0;
-  G = calloc(n_batches-1, sizeof(pck_vector_t *));
+  G = mycalloc(n_batches-1, sizeof(pck_vector_t *), 10);
   if (G == NULL) {
     if (should_free_F)
 		free(F);
@@ -298,7 +298,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
   int should_free_G_count = -1;
   for(int i=1; i<n_batches; i++) {
-    G[i-1] = calloc(N, sizeof(pck_vector_t));
+    G[i-1] = mycalloc(N, sizeof(pck_vector_t), 10);
     if (G[i-1] == NULL) {
       should_free_G_count = i-1;
 	  break;
@@ -323,7 +323,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
   // the "tester" needs some internal state
   bool should_free_tester_state = 0;
-  if ( ( tester_state = malloc( sizeof(wrapper_state_t) ) ) == NULL) {
+  if ( ( tester_state = mycalloc(1, sizeof(wrapper_state_t), 10) ) == NULL) {
     if (should_free_G) {
       for(int i=n_batches-1; i>=1; i--) {
         free(G[i-1]);
