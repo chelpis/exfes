@@ -14,8 +14,8 @@ typedef uint32_t pck_vector_t;
 #define SIMD_CHUNK_SIZE 9
 #define IA32_CHUNK_SIZE 9
 #define enumerated_degree_bound 10
-
 #define min(x, y) (((x) > (y)) ? (y) : (x))
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 typedef struct {
   matrix_t quad;
@@ -29,7 +29,6 @@ typedef struct {
   int n_batches;
   pck_vector_t **G;
   idx_lut_t *testing_LUT;
-
   solution_callback_t callback;
   void *callback_state;
 } wrapper_state_t;
@@ -41,8 +40,6 @@ vector_t init_vector(int n_rows);
 pck_vector_t pack(int n, const vector_t v);
 
 uint64_t to_gray(uint64_t i);
-
-#define unlikely(x) __builtin_expect(!!(x), 0)
 
 pck_vector_t packed_eval(LUT_t LUT, int n, int d, pck_vector_t *F, uint64_t i);
 void variables_specialization(LUT_t LUT, int n, int d, pck_vector_t *A, int k,

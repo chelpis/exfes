@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "exfes.h"
+#include "exfes_internal.h"
 #include "fes.h"
 #include "idx_LUT.h"
 

@@ -162,7 +162,6 @@ extern LUT_int_t idx_convert(idx_lut_t *table_from, idx_lut_t *table_to,
                              LUT_int_t i);
 
 // binomials coefficients
-extern uint64_t binomials[64][64];
 extern uint64_t n_monomials(int n, int d);
 
 #endif

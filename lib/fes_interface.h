@@ -1,6 +1,8 @@
 #ifndef FES_INTERFACE_H
 #define FES_INTERFACE_H
 
+#include <stdint.h>
+
 typedef int (*solution_callback_t)(void *, uint64_t, uint64_t *);
 
 #define ALGO_AUTO 0

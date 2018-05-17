@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "exfes.h"
+#include "exfes_internal.h"
 #include "fes_interface.h"
 #include "my_memory.h"
 
