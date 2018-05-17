@@ -25,16 +25,17 @@ int M(uint64_t startPointHigh, uint64_t startPointLow, int index) {
 }
 
 void freeEqs(int ***Eqs, int i, int j) {
-  if (j > 0)
+  if (j > -1)
     j -= 1;
   else {
     j = 2;
     i -= 1;
   }
   while (i >= 0) {
-    free(Eqs[i][j]);
-    if (j > 0)
+    if (j > -1) {
+      free(Eqs[i][j]);
       j -= 1;
+    }
     else {
       free(Eqs[i]);
       j = 2;
@@ -51,7 +52,7 @@ int initEqs(int n, int e, int ****EqsPtr) {
   for (int i = 0; i < e; i++) {
     EqsPtr[0][i] = mycalloc(3, sizeof(int *), 10);
     if (EqsPtr[0][i] == NULL) {
-      freeEqs(EqsPtr[0], i, 0);
+      freeEqs(EqsPtr[0], i, -1);
       return -4;
     }
     for (int j = 0; j < 3; j++) {
@@ -159,8 +160,10 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables,
   }
   // Make a copy of Eqs for evaluating fixed variables.
   int ***EqsCopy;
-  if (initEqs(n, e, &EqsCopy) != 0)
+  if (initEqs(n, e, &EqsCopy) != 0) {
+    freeEqs(Eqs, e, -1);
     return -4;
+  }
 
   // Partition problem into (1<<n_fixed) sub_problems.
   int p = n - m;
@@ -193,8 +196,8 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables,
 
     if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution,
                                   &exfes_ctx) != 0) {
-      freeEqs(EqsCopy, e, 0);
-      freeEqs(Eqs, e, 0);
+      freeEqs(EqsCopy, e, -1);
+      freeEqs(Eqs, e, -1);
       return -4;
     }
 
@@ -205,8 +208,8 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables,
       break;
   }
 
-  freeEqs(EqsCopy, e, 0);
-  freeEqs(Eqs, e, 0);
+  freeEqs(EqsCopy, e, -1);
+  freeEqs(Eqs, e, -1);
 
   if (exfes_ctx.SolCount == 1)
     return 0;
