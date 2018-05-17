@@ -1,9 +1,7 @@
 #ifndef FES_COMMON
 #define FES_COMMON
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <stdint.h>
 
 #include "idx_LUT.h"
@@ -44,7 +42,6 @@ vector_t init_vector(int n_rows);
 pck_vector_t pack(int n, const vector_t v);
 
 uint64_t to_gray(uint64_t i);
-uint64_t rdtsc(void);
 
 #define unlikely(x)     __builtin_expect(!!(x), 0)
 

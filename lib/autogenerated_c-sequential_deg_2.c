@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include "fes.h"
@@ -41,6 +40,8 @@ typedef struct {
 
 // generated with L = 9
 void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback_t callback, void* callback_state, int verbose) {
+
+  (void)verbose;
   
   wrapper_state_t *p1 = (wrapper_state_t *)callback_state;
   struct exfes_context *p2 = (struct exfes_context *)(p1->callback_state);
@@ -48,7 +49,6 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
     return; \
   }
 
-  uint64_t init_start_time = rdtsc();
   // computes the derivatives required by the enumeration kernel up to degree 2
   // this is done in-place, meaning that if "F" described the coefficients of the
   // polynomials before, then afterwards, they describe the derivatives
@@ -60,8 +60,6 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
 
 
 
-  if (verbose) printf("fes: initialisation = %" PRIu64 " cycles\n", rdtsc()-init_start_time);
-  uint64_t enumeration_start_time = rdtsc();
   uint64_t n_solutions_found = 0;
   uint64_t current_solution_index = 0;
   uint64_t pack_of_solution[65536];
@@ -659,7 +657,5 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t F[], solution_callback
 
   }
   FLUSH_SOLUTIONS();
-  uint64_t end_time = rdtsc();
- if (verbose) printf("fes: enumeration+check = %" PRIu64 " cycles\n", end_time - enumeration_start_time);
   QUIT();
 }

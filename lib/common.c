@@ -1,8 +1,5 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <stdint.h>
-#include <assert.h>
 
 #include "fes.h"
 #include "idx_LUT.h"
@@ -20,7 +17,7 @@ vector_t init_vector(int n_rows) {
 pck_vector_t pack(int n, const vector_t v) {
   pck_vector_t r = 0;
 
-  assert((unsigned int) n <= 8*sizeof(pck_vector_t));
+  //assert((unsigned int) n <= 8*sizeof(pck_vector_t));
 
   for(int i=n-1; i>=0; i--) {
     r = r << 1ll;
@@ -34,35 +31,9 @@ uint64_t to_gray(uint64_t i) {
   return (i ^ (i >> 1ll));
 }
 
-#ifdef __i386
-uint64_t rdtsc() {
-  uint64_t x;
-  __asm__ volatile ("rdtsc" : "=A" (x));
-  return x;
-}
-#else 
-uint64_t rdtsc() {
-  uint64_t a, d;
-  __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
-  return (d<<32) | a;
-}
-#endif
-
 pck_vector_t packed_eval(LUT_t LUT, int n, int d, pck_vector_t F[], uint64_t i) {
-  switch(d) {
-  case 2: return packed_eval_deg_2(LUT, n, F, i);
-  //case 3: return packed_eval_deg_3(LUT, n, F, i);
-  //case 4: return packed_eval_deg_4(LUT, n, F, i);
-  //case 5: return packed_eval_deg_5(LUT, n, F, i);
-  //case 6: return packed_eval_deg_6(LUT, n, F, i);
-  //case 7: return packed_eval_deg_7(LUT, n, F, i);
-  //case 8: return packed_eval_deg_8(LUT, n, F, i);
-  //case 9: return packed_eval_deg_9(LUT, n, F, i);
-  default:
-    printf("degree-%d naive evaluation is not yet implemented...\n", d);
-    assert(0);
-    return 0;
-  }
+  (void)d; // assume d == 2
+  return packed_eval_deg_2(LUT, n, F, i);
 }
 
 // Compute the internal state, with the last k variables specialized
@@ -93,155 +64,4 @@ if (d < 2) return;
     for(int a=0; a<k; a++)
       A[ idx_1(LUT, idx_0) ] ^= A[ idx_2(LUT, idx_0, n-k+a) ] & (v[a]);
 
-if (d < 3) return;
-// updates degree-0 term with degree-3 terms
-  for(int c=0; c<k; c++)
-    for(int b=0; b<c; b++)
-      for(int a=0; a<b; a++)
-        A[ 0 ] ^= A[ idx_3(LUT, n-k+a, n-k+b, n-k+c) ] & (v[a] & v[b] & v[c]);
-
-// updates degree-1 term with degree-3 terms
-  for(int idx_0=0; idx_0<n-k; idx_0++)
-    for(int b=0; b<k; b++)
-      for(int a=0; a<b; a++)
-        A[ idx_1(LUT, idx_0) ] ^= A[ idx_3(LUT, idx_0, n-k+a, n-k+b) ] & (v[a] & v[b]);
-
-// updates degree-2 term with degree-3 terms
-  for(int idx_1=0; idx_1<n-k; idx_1++)
-    for(int idx_0=0; idx_0<idx_1; idx_0++)
-      for(int a=0; a<k; a++)
-        A[ idx_2(LUT, idx_0, idx_1) ] ^= A[ idx_3(LUT, idx_0, idx_1, n-k+a) ] & (v[a]);
-
-if (d < 4) return;
-// updates degree-0 term with degree-4 terms
-  for(int d=0; d<k; d++)
-    for(int c=0; c<d; c++)
-      for(int b=0; b<c; b++)
-        for(int a=0; a<b; a++)
-          A[ 0 ] ^= A[ idx_4(LUT, n-k+a, n-k+b, n-k+c, n-k+d) ] & (v[a] & v[b] & v[c] & v[d]);
-
-// updates degree-1 term with degree-4 terms
-  for(int idx_0=0; idx_0<n-k; idx_0++)
-    for(int c=0; c<k; c++)
-      for(int b=0; b<c; b++)
-        for(int a=0; a<b; a++)
-          A[ idx_1(LUT, idx_0) ] ^= A[ idx_4(LUT, idx_0, n-k+a, n-k+b, n-k+c) ] & (v[a] & v[b] & v[c]);
-
-// updates degree-2 term with degree-4 terms
-  for(int idx_1=0; idx_1<n-k; idx_1++)
-    for(int idx_0=0; idx_0<idx_1; idx_0++)
-      for(int b=0; b<k; b++)
-        for(int a=0; a<b; a++)
-          A[ idx_2(LUT, idx_0, idx_1) ] ^= A[ idx_4(LUT, idx_0, idx_1, n-k+a, n-k+b) ] & (v[a] & v[b]);
-
-// updates degree-3 term with degree-4 terms
-  for(int idx_2=0; idx_2<n-k; idx_2++)
-    for(int idx_1=0; idx_1<idx_2; idx_1++)
-      for(int idx_0=0; idx_0<idx_1; idx_0++)
-        for(int a=0; a<k; a++)
-          A[ idx_3(LUT, idx_0, idx_1, idx_2) ] ^= A[ idx_4(LUT, idx_0, idx_1, idx_2, n-k+a) ] & (v[a]);
-
-if (d < 5) return;
-// updates degree-0 term with degree-5 terms
-  for(int e=0; e<k; e++)
-    for(int d=0; d<e; d++)
-      for(int c=0; c<d; c++)
-        for(int b=0; b<c; b++)
-          for(int a=0; a<b; a++)
-            A[ 0 ] ^= A[ idx_5(LUT, n-k+a, n-k+b, n-k+c, n-k+d, n-k+e) ] & (v[a] & v[b] & v[c] & v[d] & v[e]);
-
-// updates degree-1 term with degree-5 terms
-  for(int idx_0=0; idx_0<n-k; idx_0++)
-    for(int d=0; d<k; d++)
-      for(int c=0; c<d; c++)
-        for(int b=0; b<c; b++)
-          for(int a=0; a<b; a++)
-            A[ idx_1(LUT, idx_0) ] ^= A[ idx_5(LUT, idx_0, n-k+a, n-k+b, n-k+c, n-k+d) ] & (v[a] & v[b] & v[c] & v[d]);
-
-// updates degree-2 term with degree-5 terms
-  for(int idx_1=0; idx_1<n-k; idx_1++)
-    for(int idx_0=0; idx_0<idx_1; idx_0++)
-      for(int c=0; c<k; c++)
-        for(int b=0; b<c; b++)
-          for(int a=0; a<b; a++)
-            A[ idx_2(LUT, idx_0, idx_1) ] ^= A[ idx_5(LUT, idx_0, idx_1, n-k+a, n-k+b, n-k+c) ] & (v[a] & v[b] & v[c]);
-
-// updates degree-3 term with degree-5 terms
-  for(int idx_2=0; idx_2<n-k; idx_2++)
-    for(int idx_1=0; idx_1<idx_2; idx_1++)
-      for(int idx_0=0; idx_0<idx_1; idx_0++)
-        for(int b=0; b<k; b++)
-          for(int a=0; a<b; a++)
-            A[ idx_3(LUT, idx_0, idx_1, idx_2) ] ^= A[ idx_5(LUT, idx_0, idx_1, idx_2, n-k+a, n-k+b) ] & (v[a] & v[b]);
-
-// updates degree-4 term with degree-5 terms
-  for(int idx_3=0; idx_3<n-k; idx_3++)
-    for(int idx_2=0; idx_2<idx_3; idx_2++)
-      for(int idx_1=0; idx_1<idx_2; idx_1++)
-        for(int idx_0=0; idx_0<idx_1; idx_0++)
-          for(int a=0; a<k; a++)
-            A[ idx_4(LUT, idx_0, idx_1, idx_2, idx_3) ] ^= A[ idx_5(LUT, idx_0, idx_1, idx_2, idx_3, n-k+a) ] & (v[a]);
-
-if (d < 6) return;
-// updates degree-0 term with degree-6 terms
-  for(int f=0; f<k; f++)
-    for(int e=0; e<f; e++)
-      for(int d=0; d<e; d++)
-        for(int c=0; c<d; c++)
-          for(int b=0; b<c; b++)
-            for(int a=0; a<b; a++)
-              A[ 0 ] ^= A[ idx_6(LUT, n-k+a, n-k+b, n-k+c, n-k+d, n-k+e, n-k+f) ] & (v[a] & v[b] & v[c] & v[d] & v[e] & v[f]);
-
-// updates degree-1 term with degree-6 terms
-  for(int idx_0=0; idx_0<n-k; idx_0++)
-    for(int e=0; e<k; e++)
-      for(int d=0; d<e; d++)
-        for(int c=0; c<d; c++)
-          for(int b=0; b<c; b++)
-            for(int a=0; a<b; a++)
-              A[ idx_1(LUT, idx_0) ] ^= A[ idx_6(LUT, idx_0, n-k+a, n-k+b, n-k+c, n-k+d, n-k+e) ] & (v[a] & v[b] & v[c] & v[d] & v[e]);
-
-// updates degree-2 term with degree-6 terms
-  for(int idx_1=0; idx_1<n-k; idx_1++)
-    for(int idx_0=0; idx_0<idx_1; idx_0++)
-      for(int d=0; d<k; d++)
-        for(int c=0; c<d; c++)
-          for(int b=0; b<c; b++)
-            for(int a=0; a<b; a++)
-              A[ idx_2(LUT, idx_0, idx_1) ] ^= A[ idx_6(LUT, idx_0, idx_1, n-k+a, n-k+b, n-k+c, n-k+d) ] & (v[a] & v[b] & v[c] & v[d]);
-
-// updates degree-3 term with degree-6 terms
-  for(int idx_2=0; idx_2<n-k; idx_2++)
-    for(int idx_1=0; idx_1<idx_2; idx_1++)
-      for(int idx_0=0; idx_0<idx_1; idx_0++)
-        for(int c=0; c<k; c++)
-          for(int b=0; b<c; b++)
-            for(int a=0; a<b; a++)
-              A[ idx_3(LUT, idx_0, idx_1, idx_2) ] ^= A[ idx_6(LUT, idx_0, idx_1, idx_2, n-k+a, n-k+b, n-k+c) ] & (v[a] & v[b] & v[c]);
-
-// updates degree-4 term with degree-6 terms
-  for(int idx_3=0; idx_3<n-k; idx_3++)
-    for(int idx_2=0; idx_2<idx_3; idx_2++)
-      for(int idx_1=0; idx_1<idx_2; idx_1++)
-        for(int idx_0=0; idx_0<idx_1; idx_0++)
-          for(int b=0; b<k; b++)
-            for(int a=0; a<b; a++)
-              A[ idx_4(LUT, idx_0, idx_1, idx_2, idx_3) ] ^= A[ idx_6(LUT, idx_0, idx_1, idx_2, idx_3, n-k+a, n-k+b) ] & (v[a] & v[b]);
-
-// updates degree-5 term with degree-6 terms
-  for(int idx_4=0; idx_4<n-k; idx_4++)
-    for(int idx_3=0; idx_3<idx_4; idx_3++)
-      for(int idx_2=0; idx_2<idx_3; idx_2++)
-        for(int idx_1=0; idx_1<idx_2; idx_1++)
-          for(int idx_0=0; idx_0<idx_1; idx_0++)
-            for(int a=0; a<k; a++)
-              A[ idx_5(LUT, idx_0, idx_1, idx_2, idx_3, idx_4) ] ^= A[ idx_6(LUT, idx_0, idx_1, idx_2, idx_3, idx_4, n-k+a) ] & (v[a]);
-
-
-  if (d < 7) return;
-  printf("degree>6 specialization not yet implemented...");
-  assert(0);
-
-  printf("degree>5 specialization not yet implemented...");
-  assert(0);
 }

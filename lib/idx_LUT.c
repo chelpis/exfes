@@ -8,11 +8,8 @@
  * the License, or (at your option) any later version.
  *                 http://www.gnu.org/licenses/
  *****************************************************************************/
-#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 
 #include "idx_LUT.h"
 
@@ -98,27 +95,6 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   return (idx_lut_t *) idx_lut;
 }
 
-void print_idx_LUT(const idx_lut_t *table) {
-  for (int i = 0; i < table->d; i++) {
-    printf("LUT[%d]:\n", i);
-    for (int j = 0; j < table->n; j++)
-      printf("%d ", table->LUT[i][j]);
-    printf("\n");
-  }
-}
-
-
-void print_idx(int d, int *set) {
-  printf("[");
-  for (int i = 0; i < d; i++) {
-    if (set[i] != -1) {
-      printf("%2d", set[i]);
-      if (i < d-1)
-	printf(", ");
-    }
-  }
-  printf(" ]");
-  }
 
 
 LUT_int_t set2int(const idx_lut_t *table, int *set) {

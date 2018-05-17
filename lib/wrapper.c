@@ -1,27 +1,12 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <assert.h>
-#include <stdarg.h>
 
 #include "fes.h"
 #include "my_memory.h"
 
 uint64_t timeSecondStep = 0;
 
-
-void verbose_print(wrapper_settings_t *settings, const char* fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  if ( settings->verbose ) {
-    fprintf(stderr, "fes: ");
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
-  }
-  va_end(args);
-}
 
 void init_settings(wrapper_settings_t *result) {
   result->word_size = 32;
@@ -41,27 +26,22 @@ void init_settings(wrapper_settings_t *result) {
 
 
 void choose_settings( wrapper_settings_t *s, int n, int n_eqs, int degree) {
+  (void)n_eqs;
   // choose algorithm
-  assert(n_eqs > 0);
+  //assert(n_eqs > 0);
   if ( s->algorithm == ALGO_AUTO ) {
     if (degree < s->algo_auto_degree_bound) {
-      verbose_print(s, "low degree (%d) --> using enumeration code [threshold=%d]", degree, s->algo_auto_degree_bound);
       s->algorithm = ALGO_ENUMERATION;
     } else {
-      verbose_print(s, "''large'' degree (%d) --> using FFT evaluation");
       s->algorithm = ALGO_FFT;
     }
 
     if( s->algorithm == ALGO_ENUMERATION && s->algo_enum_self_tune ) {
       if ( degree == 2 ) {
-	verbose_print(s, "very small degree, using 16-bit words");
 	s->word_size = 16;
       }
       if ( n < SIMD_CHUNK_SIZE + 2 ) {
-	verbose_print(s, "too few variables (%d), disabling sse assembly code [threshold=%d]", n, SIMD_CHUNK_SIZE + 2);
 	s->algo_enum_use_sse = 0;
-      } else {
-	verbose_print(s, "Using SIMD code (sse2 instructions available)");
       }
     }
   }
@@ -81,7 +61,7 @@ void next_set(int n, int d, int set[]) {
 //  assumes that F (the target array) is already allocated
 int convert_input_equations(const int n, const int degree, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t F[]) {
 
-  assert(to-from <= (int) (8*sizeof(pck_vector_t)));
+  //assert(to-from <= (int) (8*sizeof(pck_vector_t)));
   vector_t x = init_vector(to-from);   // this is used to pack the equations in memory words
   if (x == NULL)
 	  return -4;
@@ -115,9 +95,8 @@ int convert_input_equations(const int n, const int degree, int from, int to, int
 // this callback is used when there are more than 32 equations
 int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
   wrapper_state_t * state = (wrapper_state_t *) _state;
-  uint64_t start = rdtsc();
 
-  assert( state->degree < enumerated_degree_bound); // enumerated_degree_bound is defined in fes.h
+  //assert( state->degree < enumerated_degree_bound); // enumerated_degree_bound is defined in fes.h
 
   uint64_t corrects_solutions[1];
   uint64_t current_solution;
@@ -141,8 +120,6 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
     }
   }
 
-  timeSecondStep += (rdtsc() - start);
-
   int answer_found = 0;
 
   if (index_correct_solution) {
@@ -155,67 +132,8 @@ int solution_tester(void *_state, uint64_t size, uint64_t* n_solutions) {
 
 // ------------------------------------------------
 void enumeration_wrapper(LUT_t LUT, int n, int d, pck_vector_t F[], solution_callback_t callback, void* callback_state, wrapper_settings_t *settings ) {
-
-  // TODO : this should probably also include a run-time check that SSE2 instructions are actually there
-
-  //if ( !settings->algo_enum_use_sse ) {
-  if (1) {
-    switch (d) {
-    case 2: exhaustive_ia32_deg_2(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 3: exhaustive_ia32_deg_3(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 4: exhaustive_ia32_deg_4(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 5: exhaustive_ia32_deg_5(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 6: exhaustive_ia32_deg_6(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 7: exhaustive_ia32_deg_7(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 8: exhaustive_ia32_deg_8(LUT, n, F, callback, callback_state, settings->verbose); break;
-    //case 9: exhaustive_ia32_deg_9(LUT, n, F, callback, callback_state, settings->verbose); break;
-    default:
-      assert(0);
-    }
-  } else {
-    if ( settings->word_size == 32 ) {
-      switch (d) {
-      //case 2: exhaustive_sse2_deg_2_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 3: exhaustive_sse2_deg_3_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 4: exhaustive_sse2_deg_4_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 5: exhaustive_sse2_deg_5_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 6: exhaustive_sse2_deg_6_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 7: exhaustive_sse2_deg_7_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 8: exhaustive_sse2_deg_8_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 9: exhaustive_sse2_deg_9_T_2_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      default:
-	assert(0);
-      }
-    }
-    else if ( settings->word_size == 16 ){
-      switch (d) {
-      //case 2: exhaustive_sse2_deg_2_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 3: exhaustive_sse2_deg_3_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 4: exhaustive_sse2_deg_4_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 5: exhaustive_sse2_deg_5_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 6: exhaustive_sse2_deg_6_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 7: exhaustive_sse2_deg_7_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 8: exhaustive_sse2_deg_8_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 9: exhaustive_sse2_deg_9_T_3_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      default:
-	assert(0);
-      }
-    }
-    else if ( settings->word_size == 8 ){
-      switch (d) {
-      //case 2: exhaustive_sse2_deg_2_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 3: exhaustive_sse2_deg_3_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 4: exhaustive_sse2_deg_4_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 5: exhaustive_sse2_deg_5_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 6: exhaustive_sse2_deg_6_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 7: exhaustive_sse2_deg_7_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 8: exhaustive_sse2_deg_8_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      //case 9: exhaustive_sse2_deg_9_T_4_el_0(LUT, n, F, callback, callback_state, settings->verbose); break;
-      default:
-	assert(0);
-      }
-    }
-  }
+    (void)d;
+    exhaustive_ia32_deg_2(LUT, n, F, callback, callback_state, settings->verbose);
 }
 
 
@@ -263,8 +181,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   // if there are more equations that what we can enumerate simultaneously,
   // we just deal with the first `enumerated_equations`, and then check
   // any eventual solutions of these against the remaining equations
-
-  verbose_print(settings, "wordsize (=%d) < #equations (=%d) --> wrapping tester around core fixed-size algorithm directly", settings->word_size, n_eqs );
 
   // we split the equations into "batches" of `settings->word_size` each
   int n_batches = n_eqs / settings->word_size;
@@ -352,13 +268,8 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
   callback_state = (void *) tester_state;
 
   // ------------ start actual computation
-  verbose_print(settings, "starting kernel");
-  uint64_t start = rdtsc();
 
   enumeration_wrapper(idx_LUT->LUT, n, degree, F, callback, callback_state, settings);
-
-  uint64_t totalTime = rdtsc() - start;
-  verbose_print(settings, "%.2f CPU cycles/candidate solution", totalTime * 1.0 / (1ll << n));
 
   // ----------- clean up
 

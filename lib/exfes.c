@@ -1,8 +1,5 @@
-#include <inttypes.h>
-#include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <time.h>
 
 #include "fes_interface.h"
 #include "exfes.h"
