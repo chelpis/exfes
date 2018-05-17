@@ -32,7 +32,10 @@ int S (uint64_t solutionHigh, uint64_t solutionLow, int index) {
 
 // Define a function to check if other nodes have found solution or not.
 bool otherNodeReady(void) {
-	return 0;
+  if (rand() % 10000000 == 0)
+	  return 1;
+  else
+    return 0;
 }
 
 // Define a function to generate a solution randomly.
@@ -183,12 +186,15 @@ int main (int argc, char **argv) {
 				printf("    Wrong Solution!!\n");
 				failCount += 1;
 			}
-		} else {
+		}
+		else if (resultCode == -2) {
+      successCount += 1;
+			printf("    Interrupted By Other Nodes (resultCode = -2)\n");
+    }
+    else {
 			failCount += 1;
 			if (resultCode == -1)
 				printf("    No Possible Solution (resultCode = -1)\n");
-			else if (resultCode == -2)
-				printf("    Interrupted By Other Nodes (resultCode = -2)\n");
 			else if (resultCode == -3)
 				printf("    Invalid Parameters (resultCode = -3)\n");
 			else if (resultCode == -4)

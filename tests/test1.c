@@ -153,11 +153,14 @@ int main (int argc, char **argv) {
 					printf("    Wrong Solution!!\n");
 					failCount += 1;
 				}
-			} else {
+			}
+      else if (resultCode == -1) {
+        successCount += 1;
+				printf("    No Possible Solution (resultCode = -1)\n");
+      }
+      else {
 				failCount += 1;
-				if (resultCode == -1)
-					printf("    No Possible Solution (resultCode = -1)\n");
-				else if (resultCode == -2)
+				if (resultCode == -2)
 					printf("    Interrupted By Other Nodes (resultCode = -2)\n");
 				else if (resultCode == -3)
 					printf("    Invalid Parameters (resultCode = -3)\n");

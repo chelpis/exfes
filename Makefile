@@ -17,7 +17,7 @@ my_memory.o
 
 OBJS = $(foreach o,$(LIB_OBJS),objs/lib/$(o))
 
-TESTS = test1 test2 omp1
+TESTS = test1 test2 test3 omp1
 
 SAMPLE = sample1
 

@@ -1,3 +1,5 @@
+// test3.c is identical to test2.c; raise the failure probability of mycalloc()
+
 #define _POSIX_C_SOURCE 200809L
 
 #include <inttypes.h>
@@ -183,7 +185,12 @@ int main (int argc, char **argv) {
 				printf("    Wrong Solution!!\n");
 				failCount += 1;
 			}
-		} else {
+		}
+    else if (resultCode == -4) {
+        successCount += 1;
+        printf("    Allocation Failure Handled (resultCode = -4)\n");
+    }
+    else {
 			failCount += 1;
 			if (resultCode == -1)
 				printf("    No Possible Solution (resultCode = -1)\n");
@@ -191,8 +198,6 @@ int main (int argc, char **argv) {
 				printf("    Interrupted By Other Nodes (resultCode = -2)\n");
 			else if (resultCode == -3)
 				printf("    Invalid Parameters (resultCode = -3)\n");
-			else if (resultCode == -4)
-				printf("    calloc / alloc Failure (resultCode = -4)\n");
 			else
 				printf("    Undefined Results\n");
 		}
