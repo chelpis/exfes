@@ -5,8 +5,6 @@
 #include "fes.h"
 #include "my_memory.h"
 
-uint64_t timeSecondStep = 0;
-
 
 void init_settings(wrapper_settings_t *result) {
   result->word_size = 32;
