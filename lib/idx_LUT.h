@@ -76,13 +76,12 @@
   monomials requires k lookups and (k-1) integer additions.
  */
 
-
 // Type of the entries in the lookup tables. It must be
 // sufficiently large to represent N(n,d)
 typedef uint32_t LUT_int_t;
 
 // Actual type of the lookup tables
-typedef const LUT_int_t * const * const LUT_t;
+typedef const LUT_int_t *const *const LUT_t;
 
 // A "package" that wraps the actual lookup tables
 // along with useful informations
@@ -92,13 +91,11 @@ typedef const struct {
   const int d;
 } idx_lut_t;
 
-
 // initialise a lookup table that works with n variables, and
 // up to degree d. It also works for smaller degree, but shouldn't be
 // used with less variables (otherwise there will be "holes" in the
 // indexing sequence
 extern const idx_lut_t *init_deginvlex_LUT(int n, int d);
-
 
 // this function initialize another indexing scheme, that turns any
 // boolean monomial of GF(2)[x_1,...,x_n] (without degree
@@ -110,7 +107,6 @@ extern void print_idx_LUT(const idx_lut_t *table);
 
 // print a set of indices.  Mainly useful for debugging
 extern void print_idx(int d, int *set);
-
 
 // reclaim the memory used by the lookup table
 extern void free_LUT(const idx_lut_t *tab);
@@ -132,17 +128,22 @@ extern LUT_int_t set2int(const idx_lut_t *table, int *set);
 //     idx_1(LUT, 4)     --> 16
 //     idx_3(LUT, 0,2,3) --> 13
 #define idx_0(LUT) (0)
-#define idx_1(LUT,i0) ((LUT)[0][i0])
-#define idx_2(LUT,i1,i0) ( idx_1(LUT, i0) + (LUT)[1][i1])
-#define idx_3(LUT,i2,i1,i0) (idx_2(LUT,i1,i0) + (LUT)[2][i2])
-#define idx_4(LUT,i3,i2,i1,i0) (idx_3(LUT,i2,i1,i0) + (LUT)[3][i3])
-#define idx_5(LUT,i4,i3,i2,i1,i0) (idx_4(LUT,i3,i2,i1,i0) + (LUT)[4][i4])
-#define idx_6(LUT,i5,i4,i3,i2,i1,i0) (idx_5(LUT,i4,i3,i2,i1,i0) + (LUT)[5][i5])
-#define idx_7(LUT,i6,i5,i4,i3,i2,i1,i0) (idx_6(LUT,i5,i4,i3,i2,i1,i0) + (LUT)[6][i6])
-#define idx_8(LUT,i7,i6,i5,i4,i3,i2,i1,i0) (idx_7(LUT,i6,i5,i4,i3,i2,i1,i0) + (LUT)[7][i7])
-#define idx_9(LUT,i8,i7,i6,i5,i4,i3,i2,i1,i0) (idx_8(LUT,i7,i6,i5,i4,i3,i2,i1,i0) + (LUT)[8][i8])
-#define idx_10(LUT,i9,i8,i7,i6,i5,i4,i3,i2,i1,i0) (idx_9(LUT,i8,i7,i6,i5,i4,i3,i2,i1,i0) + (LUT)[9][i9])
-
+#define idx_1(LUT, i0) ((LUT)[0][i0])
+#define idx_2(LUT, i1, i0) (idx_1(LUT, i0) + (LUT)[1][i1])
+#define idx_3(LUT, i2, i1, i0) (idx_2(LUT, i1, i0) + (LUT)[2][i2])
+#define idx_4(LUT, i3, i2, i1, i0) (idx_3(LUT, i2, i1, i0) + (LUT)[3][i3])
+#define idx_5(LUT, i4, i3, i2, i1, i0)                                         \
+  (idx_4(LUT, i3, i2, i1, i0) + (LUT)[4][i4])
+#define idx_6(LUT, i5, i4, i3, i2, i1, i0)                                     \
+  (idx_5(LUT, i4, i3, i2, i1, i0) + (LUT)[5][i5])
+#define idx_7(LUT, i6, i5, i4, i3, i2, i1, i0)                                 \
+  (idx_6(LUT, i5, i4, i3, i2, i1, i0) + (LUT)[6][i6])
+#define idx_8(LUT, i7, i6, i5, i4, i3, i2, i1, i0)                             \
+  (idx_7(LUT, i6, i5, i4, i3, i2, i1, i0) + (LUT)[7][i7])
+#define idx_9(LUT, i8, i7, i6, i5, i4, i3, i2, i1, i0)                         \
+  (idx_8(LUT, i7, i6, i5, i4, i3, i2, i1, i0) + (LUT)[8][i8])
+#define idx_10(LUT, i9, i8, i7, i6, i5, i4, i3, i2, i1, i0)                    \
+  (idx_9(LUT, i8, i7, i6, i5, i4, i3, i2, i1, i0) + (LUT)[9][i9])
 
 // generic backwards conversion between an integer and a tuple
 // of d indices describing a monomial. This is the reciprocal of the
@@ -150,13 +151,15 @@ extern LUT_int_t set2int(const idx_lut_t *table, int *set);
 // of length at least d.
 extern void int2set(const idx_lut_t *table, LUT_int_t index, int *set);
 
-
-// Convert an integer index representing a monomial in the indexing scheme specified by
-//  `table_from` to an integer index representing the same monomial in the indexing scheme
-// specified by `table_to`. It is assumed that `table_to` must be able to handle the number
-// of variables and the degree of the monomial (unexpected behavior otherwise).
-extern LUT_int_t idx_convert(idx_lut_t *table_from, idx_lut_t *table_to, LUT_int_t i);
-
+// Convert an integer index representing a monomial in the indexing scheme
+// specified by
+//  `table_from` to an integer index representing the same monomial in the
+//  indexing scheme
+// specified by `table_to`. It is assumed that `table_to` must be able to handle
+// the number of variables and the degree of the monomial (unexpected behavior
+// otherwise).
+extern LUT_int_t idx_convert(idx_lut_t *table_from, idx_lut_t *table_to,
+                             LUT_int_t i);
 
 // binomials coefficients
 extern uint64_t binomials[64][64];
