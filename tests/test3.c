@@ -1,4 +1,4 @@
-// test3.c is identical to test2.c; raise the failure probability of mycalloc()
+// test3.c is identical to test2.c; raise the failure probability of exfes_calloc()
 
 #define _POSIX_C_SOURCE 200809L
 
