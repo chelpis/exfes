@@ -6,6 +6,8 @@
 #include "fes.h"
 #include "my_memory.h"
 
+void Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol);  // quick hack
+
 void next_set(int n, int d, int *set)
 {
     if (!d) {
@@ -66,19 +68,15 @@ int solution_tester(void *_state, uint64_t size, uint64_t *n_solutions)
             int num_correct_solutions = 1;
             uint64_t corrects_solutions[1];
             corrects_solutions[0] = current_solution;
-            return state->callback(state->callback_state, num_correct_solutions, corrects_solutions);
+            Merge_Solution(state->callback_state, num_correct_solutions, corrects_solutions);
+            return 1;
         }
     }
 
     return 0;
 }
 
-void enumeration_wrapper(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state)
-{
-    exhaustive_ia32_deg_2(LUT, n, F, callback, callback_state);
-}
-
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, solution_callback_t callback, void *callback_state)
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, void *callback_state)
 {
     const uint64_t N = n_monomials(n, degree);
     const int word_size = 16;
@@ -142,10 +140,9 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
     solution_tester_state.n_batches = n_batches - 1;
     solution_tester_state.G = G;
     solution_tester_state.testing_LUT = idx_LUT;
-    solution_tester_state.callback = callback;
     solution_tester_state.callback_state = callback_state;
 
-    enumeration_wrapper(idx_LUT->LUT, n, F, solution_tester, &solution_tester_state);
+    exhaustive_ia32_deg_2(idx_LUT->LUT, n, F, &solution_tester_state);
 
     for (int i = n_batches - 1; i >= 1; i--) {
         free(G[i - 1]);

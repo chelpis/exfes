@@ -89,15 +89,15 @@ void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, i
     }
 }
 
-int Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
+void Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
 {
     struct exfes_context *p = _ctx_ptr;
 
-    int const mcopy = p->mcopy;
-    int const ncopy = p->ncopy;
-    uint64_t const solm = p->solm;
-    uint64_t const startPointHigh = p->startPointHigh;
-    uint64_t const startPointLow = p->startPointLow;
+    const int mcopy = p->mcopy;
+    const int ncopy = p->ncopy;
+    const uint64_t solm = p->solm;
+    const uint64_t startPointHigh = p->startPointHigh;
+    const uint64_t startPointLow = p->startPointLow;
     uint64_t *solutionHigh = p->solutionHigh;
     uint64_t *solutionLow = p->solutionLow;
 
@@ -115,8 +115,6 @@ int Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
     }
 
     p->SolCount = 1;
-
-    return 1;
 }
 
 int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow)
@@ -211,7 +209,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             npartial -= 1;
         }
 
-        if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx) != 0) {
+        if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, &exfes_ctx) != 0) {
             freeEqs(EqsCopy, e, -1);
             freeEqs(Eqs, e, -1);
             return -4;
