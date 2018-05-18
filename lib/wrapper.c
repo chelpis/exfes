@@ -6,7 +6,7 @@
 #include "fes.h"
 #include "my_memory.h"
 
-void Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol);  // quick hack
+void Merge_Solution(struct exfes_context *p, uint64_t count, uint64_t *Sol);  // quick hack
 
 void next_set(int n, int d, int *set)
 {
@@ -50,10 +50,8 @@ int convert_input_equations(const int n, const int degree, int from, int to, int
 }
 
 // this callback is used when there are more than 32 equations
-int solution_tester(void *_state, uint64_t size, uint64_t *n_solutions)
+int solution_tester(wrapper_state_t *state, uint64_t size, uint64_t *n_solutions)
 {
-    wrapper_state_t *state = _state;
-
     for (uint64_t i = 0; i < size; i++) {
         uint64_t current_solution = n_solutions[i];
         int is_correct = 1;
@@ -72,11 +70,10 @@ int solution_tester(void *_state, uint64_t size, uint64_t *n_solutions)
             return 1;
         }
     }
-
     return 0;
 }
 
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, void *callback_state)
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, struct exfes_context *exfes_ctx_ptr)
 {
     const uint64_t N = n_monomials(n, degree);
     const int word_size = 16;
@@ -140,7 +137,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
     solution_tester_state.n_batches = n_batches - 1;
     solution_tester_state.G = G;
     solution_tester_state.testing_LUT = idx_LUT;
-    solution_tester_state.callback_state = callback_state;
+    solution_tester_state.callback_state = exfes_ctx_ptr;
 
     exhaustive_ia32_deg_2(idx_LUT->LUT, n, F, &solution_tester_state);
 

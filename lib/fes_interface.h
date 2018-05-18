@@ -17,6 +17,6 @@
 #define ALGO_ENUMERATION 1
 #define ALGO_FFT 2
 
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, void *callback_state);
+int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, struct exfes_context *callback_state);
 
 #endif

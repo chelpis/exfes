@@ -10,12 +10,12 @@ typedef struct {
     uint32_t mask;
 } solution_t;
 
-int solution_tester(void *_state, uint64_t size, uint64_t *n_solutions);  // quick hack
+int solution_tester(wrapper_state_t *state, uint64_t size, uint64_t *n_solutions);  // quick hack
 
 // generated with L = 9
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, void *callback_state)
+void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *callback_state)
 {
-    struct exfes_context *ctx = ((wrapper_state_t *)callback_state)->callback_state;
+    struct exfes_context *ctx = callback_state->callback_state;
 
     // computes the derivatives required by the enumeration kernel up to degree 2
     // this is done in-place, meaning that if "F" described the coefficients of

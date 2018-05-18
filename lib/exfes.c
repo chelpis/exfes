@@ -89,10 +89,8 @@ void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, i
     }
 }
 
-void Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
+void Merge_Solution(struct exfes_context *p, uint64_t count, uint64_t *Sol)
 {
-    struct exfes_context *p = _ctx_ptr;
-
     const int mcopy = p->mcopy;
     const int ncopy = p->ncopy;
     const uint64_t solm = p->solm;
