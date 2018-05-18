@@ -32,12 +32,12 @@ uint64_t n_monomials(int n, int d) {
 const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   const int errors = n - 1 - d; // possible errors to correct
 
-  LUT_int_t **LUT = (LUT_int_t **)mycalloc(d, sizeof(LUT_int_t *), 10);
+  LUT_int_t **LUT = (LUT_int_t **)exfes_calloc(d, sizeof(LUT_int_t *), 10);
   if (LUT == NULL)
     return NULL;
   int count_i = -1;
   for (int i = 0; i < d; i++) {
-    LUT[i] = (LUT_int_t *)mycalloc(n, sizeof(LUT_int_t), 10);
+    LUT[i] = (LUT_int_t *)exfes_calloc(n, sizeof(LUT_int_t), 10);
     if (LUT[i] == NULL) {
       count_i = i;
       break;
@@ -82,7 +82,7 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
     LUT[d - 1][i] = i + 1;
 
   nonconst_lut_t *idx_lut =
-      (nonconst_lut_t *)mycalloc(1, sizeof(idx_lut_t), 10);
+      (nonconst_lut_t *)exfes_calloc(1, sizeof(idx_lut_t), 10);
   if (idx_lut == NULL) {
     for (int i = d - 1; i >= 0; i--)
       free(LUT[i]);
