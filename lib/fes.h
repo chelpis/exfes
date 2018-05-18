@@ -54,7 +54,7 @@ typedef struct {
     int n_batches;
     pck_vector_t **G;
     idx_lut_t *testing_LUT;
-    struct exfes_context *callback_state;
+    struct exfes_context *exfes_ctx_ptr;
 } wrapper_state_t;
 
 void free_vector(vector_t x);
@@ -65,7 +65,7 @@ pck_vector_t packed_eval(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 void variables_specialization(LUT_t LUT, int n, int d, pck_vector_t *A, int k, int i);
 system_t generate_random_system(int n, int u);
 void free_system(int n, int n_eqs, system_t f);
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *callback_state);
+void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr);
 pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 
 #endif

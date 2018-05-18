@@ -10,12 +10,12 @@ typedef struct {
     uint32_t mask;
 } solution_t;
 
-int solution_tester(wrapper_state_t *state, uint64_t size, uint64_t *n_solutions);  // quick hack
+int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions);  // quick hack
 
 // generated with L = 9
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *callback_state)
+void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr)
 {
-    struct exfes_context *ctx = callback_state->callback_state;
+    struct exfes_context *ctx = wrapper_state_ptr->exfes_ctx_ptr;
 
     // computes the derivatives required by the enumeration kernel up to degree 2
     // this is done in-place, meaning that if "F" described the coefficients of
@@ -33,17 +33,17 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *c
     uint64_t pack_of_solution[65536];
     solution_t solution_buffer[516];
 
-#define PUSH_SOLUTION(current_solution)                                                      \
-    {                                                                                        \
-        pack_of_solution[current_solution_index] = current_solution;                         \
-        current_solution_index++;                                                            \
-        if (current_solution_index == 65536) {                                               \
-            /* FLUSH_SOLUTIONS */                                                            \
-            if (solution_tester(callback_state, current_solution_index, pack_of_solution)) { \
-                return;                                                                      \
-            }                                                                                \
-            current_solution_index = 0;                                                      \
-        }                                                                                    \
+#define PUSH_SOLUTION(current_solution)                                                         \
+    {                                                                                           \
+        pack_of_solution[current_solution_index] = current_solution;                            \
+        current_solution_index++;                                                               \
+        if (current_solution_index == 65536) {                                                  \
+            /* FLUSH_SOLUTIONS */                                                               \
+            if (solution_tester(wrapper_state_ptr, current_solution_index, pack_of_solution)) { \
+                return;                                                                         \
+            }                                                                                   \
+            current_solution_index = 0;                                                         \
+        }                                                                                       \
     }
 
 #define CHECK_SOLUTIONS()                                           \
@@ -673,5 +673,5 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *c
     }
 
     /* FLUSH_SOLUTIONS */
-    solution_tester(callback_state, current_solution_index, pack_of_solution);
+    solution_tester(wrapper_state_ptr, current_solution_index, pack_of_solution);
 }

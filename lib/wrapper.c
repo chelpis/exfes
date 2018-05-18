@@ -50,14 +50,14 @@ int convert_input_equations(const int n, const int degree, int from, int to, int
 }
 
 // this callback is used when there are more than 32 equations
-int solution_tester(wrapper_state_t *state, uint64_t size, uint64_t *n_solutions)
+int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions)
 {
     for (uint64_t i = 0; i < size; i++) {
         uint64_t current_solution = n_solutions[i];
         int is_correct = 1;
         int j = 0;
-        while (is_correct && j < state->n_batches) {
-            if (packed_eval(state->testing_LUT->LUT, state->n, state->G[j], current_solution) != 0) {
+        while (is_correct && j < wrapper_state_ptr->n_batches) {
+            if (packed_eval(wrapper_state_ptr->testing_LUT->LUT, wrapper_state_ptr->n, wrapper_state_ptr->G[j], current_solution) != 0) {
                 is_correct = 0;
             }
             j++;
@@ -66,7 +66,7 @@ int solution_tester(wrapper_state_t *state, uint64_t size, uint64_t *n_solutions
             int num_correct_solutions = 1;
             uint64_t corrects_solutions[1];
             corrects_solutions[0] = current_solution;
-            Merge_Solution(state->callback_state, num_correct_solutions, corrects_solutions);
+            Merge_Solution(wrapper_state_ptr->exfes_ctx_ptr, num_correct_solutions, corrects_solutions);
             return 1;
         }
     }
@@ -131,15 +131,15 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
         return -4;
     }
 
-    wrapper_state_t solution_tester_state;
-    solution_tester_state.n = n;
-    solution_tester_state.degree = degree;
-    solution_tester_state.n_batches = n_batches - 1;
-    solution_tester_state.G = G;
-    solution_tester_state.testing_LUT = idx_LUT;
-    solution_tester_state.callback_state = exfes_ctx_ptr;
+    wrapper_state_t wrapper_state;
+    wrapper_state.n = n;
+    wrapper_state.degree = degree;
+    wrapper_state.n_batches = n_batches - 1;
+    wrapper_state.G = G;
+    wrapper_state.testing_LUT = idx_LUT;
+    wrapper_state.exfes_ctx_ptr = exfes_ctx_ptr;
 
-    exhaustive_ia32_deg_2(idx_LUT->LUT, n, F, &solution_tester_state);
+    exhaustive_ia32_deg_2(idx_LUT->LUT, n, F, &wrapper_state);
 
     for (int i = n_batches - 1; i >= 1; i--) {
         free(G[i - 1]);
