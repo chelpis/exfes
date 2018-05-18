@@ -50,7 +50,7 @@ int convert_input_equations(const int n, const int degree, int from, int to, int
 // this callback is used when there are more than 32 equations
 int solution_tester(void *_state, uint64_t size, uint64_t *n_solutions)
 {
-    wrapper_state_t *state = (wrapper_state_t *)_state;
+    wrapper_state_t *state = _state;
 
     for (uint64_t i = 0; i < size; i++) {
         uint64_t current_solution = n_solutions[i];

@@ -13,8 +13,8 @@ typedef struct {
 // generated with L = 9
 void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state)
 {
-    wrapper_state_t *p1 = (wrapper_state_t *)callback_state;
-    struct exfes_context *p2 = (struct exfes_context *)(p1->callback_state);
+    wrapper_state_t *p1 = callback_state;
+    struct exfes_context *p2 = p1->callback_state;
 
     // computes the derivatives required by the enumeration kernel up to degree 2
     // this is done in-place, meaning that if "F" described the coefficients of
