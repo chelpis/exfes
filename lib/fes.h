@@ -63,11 +63,11 @@ void free_vector(vector_t x);
 vector_t init_vector(int n_rows);
 pck_vector_t pack(int n, const vector_t v);
 uint64_t to_gray(uint64_t i);
-pck_vector_t packed_eval(LUT_t LUT, int n, int d, pck_vector_t *F, uint64_t i);
+pck_vector_t packed_eval(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 void variables_specialization(LUT_t LUT, int n, int d, pck_vector_t *A, int k, int i);
 system_t generate_random_system(int n, int u);
 void free_system(int n, int n_eqs, system_t f);
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state, int verbose);
+void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state);
 pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 
 #endif

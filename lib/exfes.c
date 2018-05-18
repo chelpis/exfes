@@ -8,29 +8,31 @@
 
 int C(int n, int m)
 {
-    if (m == 0)
+    if (m == 0) {
         return 1;
-    else if (m == 1)
+    } else if (m == 1) {
         return n;
-    else if (m == 2)
+    } else if (m == 2) {
         return n * (n - 1) >> 1;
-    else
+    } else {
         return 0;
+    }
 }
 
 int M(uint64_t startPointHigh, uint64_t startPointLow, int index)
 {
-    if (index < 64)
+    if (index < 64) {
         return (startPointLow >> index) & 1;
-    else
+    } else {
         return (startPointHigh >> (index - 64)) & 1;
+    }
 }
 
 void freeEqs(int ***Eqs, int i, int j)
 {
-    if (j > -1)
+    if (j > -1) {
         j -= 1;
-    else {
+    } else {
         j = 2;
         i -= 1;
     }
@@ -50,17 +52,18 @@ void freeEqs(int ***Eqs, int i, int j)
 int initEqs(int n, int e, int ****EqsPtr)
 {
     EqsPtr[0] = exfes_calloc(e, sizeof(int **), 10);
-    if (EqsPtr[0] == NULL)
+    if (!EqsPtr[0]) {
         return -4;
+    }
     for (int i = 0; i < e; i++) {
         EqsPtr[0][i] = exfes_calloc(3, sizeof(int *), 10);
-        if (EqsPtr[0][i] == NULL) {
+        if (!EqsPtr[0][i]) {
             freeEqs(EqsPtr[0], i, -1);
             return -4;
         }
         for (int j = 0; j < 3; j++) {
             EqsPtr[0][i][j] = exfes_calloc(C(n, j), sizeof(int), 10);
-            if (EqsPtr[0][i][j] == NULL) {
+            if (!EqsPtr[0][i][j]) {
                 freeEqs(EqsPtr[0], i, j);
                 return -4;
             }
@@ -73,11 +76,13 @@ void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, i
 {
     uint64_t offset = 0;
     for (int i = 0; i < e; i++) {
-        for (int j = 0; j < C(n, 2); j++)
+        for (int j = 0; j < C(n, 2); j++) {
             Eqs[i][2][j] = (int)coefficientsMatrix[offset + j];
+        }
         offset += C(n, 2);
-        for (int j = 0; j < n; j++)
+        for (int j = 0; j < n; j++) {
             Eqs[i][1][j] = (int)coefficientsMatrix[offset + j];
+        }
         offset += n;
         Eqs[i][0][0] = (int)coefficientsMatrix[offset];
         offset += 1;
@@ -108,6 +113,7 @@ int Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
         solutionLow[0] ^= startPointLow;
         solutionHigh[0] ^= (startPointHigh << (128 - ncopy)) >> (128 - ncopy);
     }
+
     p->SolCount = 1;
 
     return 1;
@@ -115,17 +121,19 @@ int Merge_Solution(void *_ctx_ptr, uint64_t count, uint64_t *Sol)
 
 int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow)
 {
-
     int m = numFixedVariables;
     int n = numVariables;
     int e = numEquations;
 
-    if (n == 0 || n >= 127)
+    if (n == 0 || n >= 127) {
         return -3;
-    else if (n - m <= 0 || n - m >= 64)
+    }
+    if (n - m <= 0 || n - m >= 64) {
         return -3;
-    else if (e <= 16 || e >= 256)
+    }
+    if (e <= 16 || e >= 256) {
         return -3;
+    }
 
     struct exfes_context exfes_ctx;
     exfes_ctx.mcopy = m;
@@ -140,23 +148,27 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
 
     // Make a copy of EqsUnmask for masking.
     int ***Eqs;
-    if (initEqs(n, e, &Eqs) != 0)
+    if (initEqs(n, e, &Eqs) != 0) {
         return -4;
+    }
     Transform_Data_Structure(n, e, coefficientsMatrix, Eqs);
 
     // Mask Eqs for a random start point.
     for (int i = 0; i < e; i++) {
-        for (int j = 0; j < n; j++)
+        for (int j = 0; j < n; j++) {
             Eqs[i][0][0] ^= Eqs[i][1][j] & M(startPointHigh, startPointLow, j);
+        }
         int offset = 0;
-        for (int j = 0; j < n - 1; j++)
+        for (int j = 0; j < n - 1; j++) {
             for (int k = j + 1; k < n; k++) {
                 Eqs[i][0][0] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, j) & M(startPointHigh, startPointLow, k);
                 Eqs[i][1][j] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, k);
                 Eqs[i][1][k] ^= Eqs[i][2][offset] & M(startPointHigh, startPointLow, j);
                 offset += 1;
             }
+        }
     }
+
     // Make a copy of Eqs for evaluating fixed variables.
     int ***EqsCopy;
     if (initEqs(n, e, &EqsCopy) != 0) {
@@ -168,53 +180,60 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     int p = n - m;
     int npartial;
     int fixvalue;
-    for (exfes_ctx.solm = 0; exfes_ctx.solm < (uint64_t)1 << m;
-            exfes_ctx.solm++) {
+    for (exfes_ctx.solm = 0; exfes_ctx.solm < (uint64_t)1 << m; exfes_ctx.solm++) {
         // Initialize npartial and EqsCopy.
         npartial = n;
-        for (int i = 0; i < e; i++)
-            for (int j = 0; j < 3; j++)
-                for (int k = 0; k < C(n, j); k++)
+        for (int i = 0; i < e; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < C(n, j); k++) {
                     EqsCopy[i][j][k] = Eqs[i][j][k];
+                }
+            }
+        }
+
         // Fix m variables.
         while (npartial != p) {
             fixvalue = (exfes_ctx.solm >> (n - npartial)) & 1;
             for (int i = 0; i < e; i++) {
                 // Fix a variable.
-                for (int j = 0; j < npartial - 1; j++)
+                for (int j = 0; j < npartial - 1; j++) {
                     EqsCopy[i][1][j + 1] ^= EqsCopy[i][2][j] & fixvalue;
+                }
                 EqsCopy[i][0][0] ^= EqsCopy[i][1][0] & fixvalue;
                 // Shrink EqsCopy.
-                for (int j = 0; j < npartial - 1; j++)
+                for (int j = 0; j < npartial - 1; j++) {
                     EqsCopy[i][1][j] = EqsCopy[i][1][j + 1];
-                for (int j = 0; j < C(npartial - 1, 2); j++)
+                }
+                for (int j = 0; j < C(npartial - 1, 2); j++) {
                     EqsCopy[i][2][j] = EqsCopy[i][2][j + npartial - 1];
+                }
             }
             npartial -= 1;
         }
 
-        if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution,
-                    &exfes_ctx)
-                != 0) {
+        if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, Merge_Solution, &exfes_ctx) != 0) {
             freeEqs(EqsCopy, e, -1);
             freeEqs(Eqs, e, -1);
             return -4;
         }
 
         // Determine to early abort or not.
-        if (exfes_ctx.SolCount == 1)
+        if (exfes_ctx.SolCount == 1) {
             break;
-        else if (exfes_ctx.SolCount == 2)
+        }
+        if (exfes_ctx.SolCount == 2) {
             break;
+        }
     }
 
     freeEqs(EqsCopy, e, -1);
     freeEqs(Eqs, e, -1);
 
-    if (exfes_ctx.SolCount == 1)
+    if (exfes_ctx.SolCount == 1) {
         return 0;
-    else if (exfes_ctx.SolCount == 0)
+    } else if (exfes_ctx.SolCount == 0) {
         return -1;
-    else
+    } else {
         return -2;
+    }
 }

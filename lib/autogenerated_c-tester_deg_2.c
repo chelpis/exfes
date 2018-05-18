@@ -10,8 +10,9 @@ pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
     pck_vector_t v[n];
     for (int k = 0; k < n; k++) {
         v[k] = 0;
-        if (i & 0x0001)
+        if (i & 0x0001) {
             v[k] = 0xffffffff;
+        }
         i = (i >> 1ll);
     }
 

@@ -11,11 +11,8 @@ typedef struct {
 } solution_t;
 
 // generated with L = 9
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state, int verbose)
+void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_t callback, void *callback_state)
 {
-
-    (void)verbose;
-
     wrapper_state_t *p1 = (wrapper_state_t *)callback_state;
     struct exfes_context *p2 = (struct exfes_context *)(p1->callback_state);
 
@@ -25,8 +22,9 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_
 
     // here, degree-1 terms are affected by degree-2 terms
     for (int i0 = 1; i0 < n; i0++) {
-        if (i0 != 0)
+        if (i0 != 0) {
             F[idx_1(LUT, i0)] ^= F[idx_2(LUT, i0 - 1, i0)];
+        }
     }
 
     uint64_t n_solutions_found = 0;
@@ -34,23 +32,25 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_
     uint64_t pack_of_solution[65536];
     solution_t solution_buffer[516];
 
-#define PUSH_SOLUTION(current_solution)                                             \
-    {                                                                               \
-        pack_of_solution[current_solution_index] = current_solution;                \
-        current_solution_index++;                                                   \
-        if (current_solution_index == 65536) {                                      \
-            /* FLUSH_SOLUTIONS */                                                   \
-            if (callback(callback_state, current_solution_index, pack_of_solution)) \
-                return;                                                             \
-            current_solution_index = 0;                                             \
-        }                                                                           \
+#define PUSH_SOLUTION(current_solution)                                               \
+    {                                                                                 \
+        pack_of_solution[current_solution_index] = current_solution;                  \
+        current_solution_index++;                                                     \
+        if (current_solution_index == 65536) {                                        \
+            /* FLUSH_SOLUTIONS */                                                     \
+            if (callback(callback_state, current_solution_index, pack_of_solution)) { \
+                return;                                                               \
+            }                                                                         \
+            current_solution_index = 0;                                               \
+        }                                                                             \
     }
 
 #define CHECK_SOLUTIONS()                                           \
     {                                                               \
         for (uint64_t i = 0; i < n_solutions_found; i++) {          \
-            if (solution_buffer[i].mask & 0xffff)                   \
+            if (solution_buffer[i].mask & 0xffff) {                 \
                 PUSH_SOLUTION(to_gray(solution_buffer[i].int_idx)); \
+            }                                                       \
         }                                                           \
         n_solutions_found = 0;                                      \
     }
@@ -93,7 +93,7 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_
     for (int idx_0 = 0; idx_0 < n; idx_0++) {
 
         // special case when i has hamming weight exactly 1
-        const uint64_t weight_1_start = weight_0_start + (1ll << idx_0);
+        const uint64_t weight_1_start = weight_0_start + (1ULL << idx_0);
         STEP_1(idx_1(LUT, idx_0), weight_1_start);
 
         // we are now inside the critical part where the hamming weight is known to
@@ -103,7 +103,7 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, solution_callback_
         // 512 plus one This loop sets it to `rolled_end`, which is a multiple of
         // 512, if possible
 
-        const uint64_t rolled_end = weight_1_start + (1ll << min(9, idx_0));
+        const uint64_t rolled_end = weight_1_start + (1ULL << min(9, idx_0));
         for (uint64_t i = 1 + weight_1_start; i < rolled_end; i++) {
 
             int pos = 0;

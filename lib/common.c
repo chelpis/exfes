@@ -5,7 +5,10 @@
 #include "idx_LUT.h"
 #include "my_memory.h"
 
-void free_vector(vector_t x) { free(x); }
+void free_vector(vector_t x)
+{
+    free(x);
+}
 
 vector_t init_vector(int n_rows)
 {
@@ -16,21 +19,21 @@ pck_vector_t pack(int n, const vector_t v)
 {
     pck_vector_t r = 0;
 
-    // assert((unsigned int) n <= 8*sizeof(pck_vector_t));
-
     for (int i = n - 1; i >= 0; i--) {
-        r = r << 1ll;
-        r |= v[i] & 0x0001ll;
+        r = r << 1;
+        r |= v[i] & 1;
     }
 
     return r;
 }
 
-uint64_t to_gray(uint64_t i) { return (i ^ (i >> 1ll)); }
-
-pck_vector_t packed_eval(LUT_t LUT, int n, int d, pck_vector_t *F, uint64_t i)
+uint64_t to_gray(uint64_t i)
 {
-    (void)d;  // assume d == 2
+    return i ^ (i >> 1);
+}
+
+pck_vector_t packed_eval(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
+{
     return packed_eval_deg_2(LUT, n, F, i);
 }
 
@@ -45,24 +48,32 @@ void variables_specialization(LUT_t LUT, int n, int d, pck_vector_t *A, int k, i
     pck_vector_t v[k];
     for (int l = 0; l < k; l++) {
         v[l] = 0;
-        if (i & 0x0001)
+        if (i & 1) {
             v[l] = 0xffffffff;
-        i = (i >> 1ll);
+        }
+        i = i >> 1;
     }
 
     // updates degree-0 term with degree-1 terms
-    for (int a = 0; a < k; a++)
-        A[0] ^= A[idx_1(LUT, n - k + a)] & (v[a]);
+    for (int a = 0; a < k; a++) {
+        A[0] ^= A[idx_1(LUT, n - k + a)] & v[a];
+    }
 
-    if (d < 2)
+    if (d < 2) {
         return;
+    }
+
     // updates degree-0 term with degree-2 terms
-    for (int b = 0; b < k; b++)
-        for (int a = 0; a < b; a++)
+    for (int b = 0; b < k; b++) {
+        for (int a = 0; a < b; a++) {
             A[0] ^= A[idx_2(LUT, n - k + a, n - k + b)] & (v[a] & v[b]);
+        }
+    }
 
     // updates degree-1 term with degree-2 terms
-    for (int idx_0 = 0; idx_0 < n - k; idx_0++)
-        for (int a = 0; a < k; a++)
-            A[idx_1(LUT, idx_0)] ^= A[idx_2(LUT, idx_0, n - k + a)] & (v[a]);
+    for (int idx_0 = 0; idx_0 < n - k; idx_0++) {
+        for (int a = 0; a < k; a++) {
+            A[idx_1(LUT, idx_0)] ^= A[idx_2(LUT, idx_0, n - k + a)] & v[a];
+        }
+    }
 }
