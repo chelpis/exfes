@@ -84,7 +84,7 @@ const idx_lut_t *init_deginvlex_LUT(int n, int d) {
   nonconst_lut_t *idx_lut =
       (nonconst_lut_t *)mycalloc(1, sizeof(idx_lut_t), 10);
   if (idx_lut == NULL) {
-    for (int i=d-1; i>=0; i--)
+    for (int i = d - 1; i >= 0; i--)
       free(LUT[i]);
     free(LUT);
     return NULL;

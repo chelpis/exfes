@@ -2,8 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "fes.h"
 #include "binomials.h"
+#include "fes.h"
 #include "my_memory.h"
 
 void init_settings(wrapper_settings_t *result) {

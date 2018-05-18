@@ -35,8 +35,7 @@ void freeEqs(int ***Eqs, int i, int j) {
     if (j > -1) {
       free(Eqs[i][j]);
       j -= 1;
-    }
-    else {
+    } else {
       free(Eqs[i]);
       j = 2;
       i -= 1;
