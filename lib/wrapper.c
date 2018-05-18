@@ -229,9 +229,12 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree,
       should_free_G_count = i - 1;
       break;
     }
-    convert_input_equations(n, degree, settings->word_size * i,
+    if (convert_input_equations(n, degree, settings->word_size * i,
                             min(n_eqs, settings->word_size * (i + 1)), coeffs,
-                            testing_LUT, G[i - 1]);
+                            testing_LUT, G[i - 1]) != 0) {
+      should_free_G_count = i;
+      break;
+    }
   }
   should_free_G_count -= 1;
   while (should_free_G_count >= 0) {
