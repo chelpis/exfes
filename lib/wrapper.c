@@ -83,7 +83,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
         return -4;
     }
 
-    pck_vector_t *F = exfes_calloc(1, N * sizeof(pck_vector_t), 10);
+    pck_vector_t *F = (pck_vector_t *)exfes_calloc(1, N * sizeof(pck_vector_t), 10);
     if (!F) {
         free_LUT(idx_LUT);
         return -4;
@@ -100,7 +100,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
         n_batches++;
     }
 
-    pck_vector_t **G = exfes_calloc(n_batches - 1, sizeof(pck_vector_t *), 10);
+    pck_vector_t **G = (pck_vector_t **)exfes_calloc(n_batches - 1, sizeof(pck_vector_t *), 10);
     if (!G) {
         free(F);
         free_LUT(idx_LUT);
@@ -109,7 +109,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
     int should_free_G_count = -1;
     for (int i = 1; i < n_batches; i++) {
-        G[i - 1] = exfes_calloc(N, sizeof(pck_vector_t), 10);
+        G[i - 1] = (pck_vector_t *)exfes_calloc(N, sizeof(pck_vector_t), 10);
         if (!G[i - 1]) {
             should_free_G_count = i - 1;
             break;

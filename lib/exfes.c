@@ -51,18 +51,18 @@ void freeEqs(int ***Eqs, int i, int j)
 
 int initEqs(int n, int e, int ****EqsPtr)
 {
-    EqsPtr[0] = exfes_calloc(e, sizeof(int **), 10);
+    EqsPtr[0] = (int ***)exfes_calloc(e, sizeof(int **), 10);
     if (!EqsPtr[0]) {
         return -4;
     }
     for (int i = 0; i < e; i++) {
-        EqsPtr[0][i] = exfes_calloc(3, sizeof(int *), 10);
+        EqsPtr[0][i] = (int **)exfes_calloc(3, sizeof(int *), 10);
         if (!EqsPtr[0][i]) {
             freeEqs(EqsPtr[0], i, -1);
             return -4;
         }
         for (int j = 0; j < 3; j++) {
-            EqsPtr[0][i][j] = exfes_calloc(C(n, j), sizeof(int), 10);
+            EqsPtr[0][i][j] = (int *)exfes_calloc(C(n, j), sizeof(int), 10);
             if (!EqsPtr[0][i][j]) {
                 freeEqs(EqsPtr[0], i, j);
                 return -4;
