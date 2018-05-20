@@ -22,8 +22,8 @@
 //      exhaustive_ia32_deg_2
 //      packed_eval_deg_2
 
-#ifndef FES_H
-#define FES_H
+#ifndef FES_H_INCLUDED
+#define FES_H_INCLUDED
 
 #include <stdint.h>  // uint32_t, uint64_t
 
@@ -63,4 +63,4 @@ void variables_specialization(LUT_t LUT, int n, int d, pck_vector_t *A, int k, i
 void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr);
 pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 
-#endif
+#endif  // FES_H_INCLUDED

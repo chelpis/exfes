@@ -3,8 +3,8 @@
 // types:
 //      struct exfes_context
 
-#ifndef EXFES_INTERNAL_H
-#define EXFES_INTERNAL_H
+#ifndef EXFES_INTERNAL_H_INCLUDED
+#define EXFES_INTERNAL_H_INCLUDED
 
 #include <stdbool.h>  // bool
 #include <stdint.h>  // uint64_t
@@ -21,4 +21,4 @@ struct exfes_context {
     bool (*shouldAbortNow)(void);
 };
 
-#endif
+#endif  // EXFES_INTERNAL_H_INCLUDED

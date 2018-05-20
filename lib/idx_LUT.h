@@ -24,8 +24,8 @@
 //      set2int
 //      n_monomials
 
-#ifndef IDX_LUT_H
-#define IDX_LUT_H
+#ifndef IDX_LUT_H_INCLUDED
+#define IDX_LUT_H_INCLUDED
 
 #include <stdint.h>  // uint32_t, uint64_t
 
@@ -83,4 +83,4 @@ LUT_int_t set2int(const idx_lut_t *table, int *set);
 
 uint64_t n_monomials(int n, int d);
 
-#endif
+#endif  // IDX_LUT_H_INCLUDED
