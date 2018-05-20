@@ -20,13 +20,8 @@
 //
 // function declarations:
 //      init_deginvlex_LUT
-//      init_lex_LUT
-//      print_idx_LUT
-//      print_idx
 //      free_LUT
 //      set2int
-//      int2set
-//      idx_convert
 //      n_monomials
 
 #ifndef IDX_LUT_H
@@ -75,17 +70,6 @@ typedef const struct {
 // indexing sequence
 const idx_lut_t *init_deginvlex_LUT(int n, int d);
 
-// this function initialize another indexing scheme, that turns any
-// boolean monomial of GF(2)[x_1,...,x_n] (without degree
-// restriction), into an integer between 0 and 2^n-1
-const idx_lut_t *init_lex_LUT(int n);
-
-// print the lookup table. Mainly useful for debugging
-void print_idx_LUT(const idx_lut_t *table);
-
-// print a set of indices.  Mainly useful for debugging
-void print_idx(int d, int *set);
-
 // reclaim the memory used by the lookup table
 void free_LUT(const idx_lut_t *tab);
 
@@ -96,10 +80,6 @@ void free_LUT(const idx_lut_t *tab);
 // should be represented by the array {8,7,6,4,1}, and the monomial
 // [0,4,6] should be represented by {6,4,0,-1,-1}.
 LUT_int_t set2int(const idx_lut_t *table, int *set);
-
-void int2set(const idx_lut_t *table, LUT_int_t index, int *set);
-
-LUT_int_t idx_convert(idx_lut_t *table_from, idx_lut_t *table_to, LUT_int_t i);
 
 uint64_t n_monomials(int n, int d);
 

@@ -118,43 +118,6 @@ LUT_int_t set2int(const idx_lut_t *table, int *set)
     return value;
 }
 
-void int2set(const idx_lut_t *table, LUT_int_t index, int *set)
-{
-    const int d = table->d;
-    const int n = table->n;
-    LUT_t LUT = table->LUT;
-
-    for (int i = 0; i < d; i++) {
-        set[i] = -1;
-    }
-
-    int i = 0;
-    while (index > 1) {
-        int j = n - 1 - i;
-        while (j >= 0 && LUT[i][j] > index) {
-            j--;
-        }
-        set[i] = j;
-        index -= LUT[i][j];
-        i++;
-    }
-
-    if (index == 1) {
-        set[i] = 0;
-    }
-}
-
-LUT_int_t idx_convert(idx_lut_t *table_from, idx_lut_t *table_to, LUT_int_t i)
-{
-    int n = table_from->n;
-    int set[n];
-    for (int j = 0; j < n; j++) {
-        set[j] = -1;
-    }
-    int2set(table_from, i, set);
-    return set2int(table_to, set);
-}
-
 // pretty self-explanatory
 void free_LUT(const idx_lut_t *table)
 {

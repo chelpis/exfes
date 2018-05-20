@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "binomials.h"
+#include "exfes_internal.h"  // struct exfes_context
 #include "fes.h"
 #include "my_memory.h"
 
