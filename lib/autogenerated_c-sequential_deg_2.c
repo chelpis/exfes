@@ -37,7 +37,7 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *w
     {                                                                                           \
         pack_of_solution[current_solution_index] = current_solution;                            \
         current_solution_index++;                                                               \
-        if (current_solution_index == 1) {                                                  \
+        if (current_solution_index == 1) {                                                      \
             /* FLUSH_SOLUTIONS */                                                               \
             if (solution_tester(wrapper_state_ptr, current_solution_index, pack_of_solution)) { \
                 return;                                                                         \
