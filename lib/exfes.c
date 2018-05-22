@@ -121,13 +121,22 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     int n = numVariables;
     int e = numEquations;
 
-    if (n == 0 || n >= 127) {
+    if (numVariables == 0 || numVariables >= 127) {
         return -3;
     }
-    if (n - m <= 0 || n - m >= 64) {
+    if (numVariables - numFixedVariables <= 0 || numVariables - numFixedVariables >= 64) {
         return -3;
     }
-    if (e <= 16 || e >= 256) {
+    if (numEquations <= 16 || numEquations >= 256) {
+        return -3;
+    }
+    if (!coefficientsMatrix) {
+        return -3;
+    }
+    if (!shouldAbortNow) {
+        return -3;
+    }
+    if (!(solutionHigh && solutionLow)) {
         return -3;
     }
 
