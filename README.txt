@@ -1,6 +1,26 @@
-### API Arguments
+### Directory Structure
+
+All the source and header files for the MQ solver are under lib/.
+
+Examples to use this library are under samples/.
+
+Testing programs/scripts are under tests/.
+
+
+
+### The Primary API Entry Point of This Library
 
 The main function "int exfes(...)" to solve MQ is declared in "exfes.h".
+
+        int exfes(uint32_t numFixedVariables,
+                  uint32_t numVariables,
+                  uint32_t numEquations,
+                  uint64_t startPointHigh,
+                  uint64_t startPointLow,
+                  const uint8_t *coefficientsMatrix,
+                  bool (*shouldAbortNow)(void),
+                  uint64_t *solutionHigh,
+                  uint64_t *solutionLow);
 
 The tuple (numFixedVariables, numVariables, numEquations) is the parameter for
 the MQ system.  For example: (0, 56, 48), (1, 64, 56), (9, 72, 64), (17, 80,
@@ -22,7 +42,7 @@ solver finds a solution, the solution will be written here.
 
 
 
-### API Returning Values
+### Return Values
 
 Returning 0 means the solver found a solution, and wrote the solution into the
 solution buffer.
@@ -36,18 +56,6 @@ Returning -3 means the some input parameters are invalid.
 
 Returning -4 means a dynamic memory allocation failure; this rarely happens;
 the caller could retry the computation.
-
-
-
-### Directory Structure
-
-Three directories are in this repository.
-
-All source and header files for the MQ solver are under lib/.
-
-Examples to use the MQ solver are under sample/.
-
-Testing programs/scripts are under tests/.
 
 
 
