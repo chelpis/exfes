@@ -224,7 +224,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
                 for (int j = 0; j < npartial - 1; j++) {
                     EqsCopy[i][1][j] = EqsCopy[i][1][j + 1];
                 }
-                for (uint32_t j = 0; j < binomials[npartial-1][2]; j++) {
+                for (uint32_t j = 0; j < binomials[npartial - 1][2]; j++) {
                     EqsCopy[i][2][j] = EqsCopy[i][2][j + npartial - 1];
                 }
             }
@@ -258,7 +258,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     }
 }
 
-pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
+static pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
 {
     // first expand the values of the variables from `i`
     pck_vector_t v[n];
@@ -289,17 +289,17 @@ pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
     return y;
 }
 
-void free_vector(vector_t x)
+static void free_vector(vector_t x)
 {
     free(x);
 }
 
-vector_t init_vector(int n_rows)
+static vector_t init_vector(int n_rows)
 {
     return (vector_t)exfes_calloc(n_rows, sizeof(int), 10);
 }
 
-pck_vector_t pack(int n, const vector_t v)
+static pck_vector_t pack(int n, const vector_t v)
 {
     pck_vector_t r = 0;
 
@@ -311,12 +311,12 @@ pck_vector_t pack(int n, const vector_t v)
     return r;
 }
 
-uint64_t to_gray(uint64_t i)
+static uint64_t to_gray(uint64_t i)
 {
     return i ^ (i >> 1);
 }
 
-int M(uint64_t startPointHigh, uint64_t startPointLow, int index)
+static int M(uint64_t startPointHigh, uint64_t startPointLow, int index)
 {
     if (index < 64) {
         return (startPointLow >> index) & 1;
@@ -325,7 +325,7 @@ int M(uint64_t startPointHigh, uint64_t startPointLow, int index)
     }
 }
 
-void freeEqs(int ***Eqs, int i, int j)
+static void freeEqs(int ***Eqs, int i, int j)
 {
     if (j > -1) {
         j -= 1;
@@ -346,7 +346,7 @@ void freeEqs(int ***Eqs, int i, int j)
     free(Eqs);
 }
 
-int initEqs(int n, int e, int ****EqsPtr)
+static int initEqs(int n, int e, int ****EqsPtr)
 {
     EqsPtr[0] = (int ***)exfes_calloc(e, sizeof(int **), 10);
     if (!EqsPtr[0]) {
@@ -369,7 +369,7 @@ int initEqs(int n, int e, int ****EqsPtr)
     return 0;
 }
 
-void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs)
+static void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs)
 {
     uint32_t offset = 0;
     for (int i = 0; i < e; i++) {
@@ -386,7 +386,7 @@ void Transform_Data_Structure(int n, int e, const uint8_t *coefficientsMatrix, i
     }
 }
 
-void Merge_Solution(exfes_context *p, uint64_t count, uint64_t *Sol)
+static void Merge_Solution(exfes_context *p, uint64_t count, uint64_t *Sol)
 {
     const int mcopy = p->mcopy;
     const int ncopy = p->ncopy;
@@ -412,7 +412,7 @@ void Merge_Solution(exfes_context *p, uint64_t count, uint64_t *Sol)
     p->SolCount = 1;
 }
 
-const idx_lut_t *init_deginvlex_LUT(int n)
+static const idx_lut_t *init_deginvlex_LUT(int n)
 {
     const int errors = n - 1 - 2;  // possible errors to correct
 
@@ -491,7 +491,7 @@ const idx_lut_t *init_deginvlex_LUT(int n)
     return (idx_lut_t *)idx_lut;
 }
 
-LUT_int_t set2int(const idx_lut_t *table, int *set)
+static LUT_int_t set2int(const idx_lut_t *table, int *set)
 {
     const int d = 2;
     LUT_t LUT = table->LUT;
@@ -508,7 +508,7 @@ LUT_int_t set2int(const idx_lut_t *table, int *set)
     return value;
 }
 
-void free_LUT(const idx_lut_t *table)
+static void free_LUT(const idx_lut_t *table)
 {
     if (table) {
         for (int i = 0; i < 2; i++) {
@@ -521,7 +521,7 @@ void free_LUT(const idx_lut_t *table)
     }
 }
 
-void *exfes_calloc(size_t num, size_t size, size_t max_num_retries)
+static void *exfes_calloc(size_t num, size_t size, size_t max_num_retries)
 {
     while (1) {
         void *p = calloc(num, size);
@@ -535,7 +535,7 @@ void *exfes_calloc(size_t num, size_t size, size_t max_num_retries)
     }
 }
 
-void next_set(int n, int d, int *set)
+static void next_set(int n, int d, int *set)
 {
     if (!d) {
         return;
@@ -549,7 +549,7 @@ void next_set(int n, int d, int *set)
     }
 }
 
-int convert_input_equations(const int n, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t *F)
+static int convert_input_equations(const int n, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t *F)
 {
     vector_t x = init_vector(to - from);  // this is used to pack the equations in memory words
     if (!x) {
@@ -577,7 +577,7 @@ int convert_input_equations(const int n, int from, int to, int ***coeffs, idx_lu
 }
 
 // this callback is used when there are more than 32 equations
-int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions)
+static int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions)
 {
     for (uint64_t i = 0; i < size; i++) {
         uint64_t current_solution = n_solutions[i];
@@ -600,7 +600,7 @@ int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t 
     return 0;
 }
 
-int exhaustive_search_wrapper(const int n, int n_eqs, int ***coeffs, exfes_context *exfes_ctx_ptr)
+static int exhaustive_search_wrapper(const int n, int n_eqs, int ***coeffs, exfes_context *exfes_ctx_ptr)
 {
     const uint64_t N = binomials[n][3];
     const int word_size = 16;
@@ -677,7 +677,7 @@ int exhaustive_search_wrapper(const int n, int n_eqs, int ***coeffs, exfes_conte
     return 0;
 }
 
-void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr)
+static void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr)
 {
     exfes_context *ctx = wrapper_state_ptr->exfes_ctx_ptr;
 
@@ -1286,4 +1286,3 @@ void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *w
     /* FLUSH_SOLUTIONS */
     solution_tester(wrapper_state_ptr, current_solution_index, pack_of_solution);
 }
-
