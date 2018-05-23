@@ -60,7 +60,6 @@ typedef const LUT_int_t *const *const LUT_t;
 typedef const struct {
     LUT_t LUT;
     const int n;
-    const int d;
 } idx_lut_t;
 typedef int *vector_t;
 typedef vector_t *matrix_t;
@@ -84,7 +83,6 @@ typedef struct {
 } exfes_context;
 typedef struct {
     int n;
-    int degree;
     int n_batches;
     pck_vector_t **G;
     idx_lut_t *testing_LUT;
@@ -130,7 +128,7 @@ static void *exfes_calloc(size_t num, size_t size, size_t max_num_retries);
 static void next_set(int n, int d, int *set);
 static int convert_input_equations(const int n, int from, int to, int ***coeffs, idx_lut_t *idx_LUT, pck_vector_t *F);
 static int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions);
-static int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, exfes_context *exfes_ctx_ptr);
+static int exhaustive_search_wrapper(const int n, int n_eqs, int ***coeffs, exfes_context *exfes_ctx_ptr);
 static void exhaustive_ia32_deg_2(LUT_t LUT, int n, pck_vector_t *F, wrapper_state_t *wrapper_state_ptr);
 
 int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow)
@@ -234,7 +232,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             npartial -= 1;
         }
 
-        if (exhaustive_search_wrapper(npartial, e, 2, EqsCopy, &exfes_ctx) != 0) {
+        if (exhaustive_search_wrapper(npartial, e, EqsCopy, &exfes_ctx) != 0) {
             freeEqs(EqsCopy, e, -1);
             freeEqs(Eqs, e, -1);
             return -4;
@@ -490,7 +488,6 @@ const idx_lut_t *init_deginvlex_LUT(int n)
     }
 
     idx_lut->n = n;
-    idx_lut->d = 2;
     idx_lut->LUT = LUT;
 
     // Note by JS:  WTF?  Is this a safe cast well-defined by the C11 standard?
@@ -502,7 +499,7 @@ const idx_lut_t *init_deginvlex_LUT(int n)
 
 LUT_int_t set2int(const idx_lut_t *table, int *set)
 {
-    const int d = table->d;
+    const int d = 2;
     LUT_t LUT = table->LUT;
     LUT_int_t value = 0;
 
@@ -520,7 +517,7 @@ LUT_int_t set2int(const idx_lut_t *table, int *set)
 void free_LUT(const idx_lut_t *table)
 {
     if (table) {
-        for (int i = 0; i < table->d; i++) {
+        for (int i = 0; i < 2; i++) {
             if (table->LUT[i]) {
                 free((void *)table->LUT[i]);
             }
@@ -609,7 +606,7 @@ int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, uint64_t 
     return 0;
 }
 
-int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***coeffs, exfes_context *exfes_ctx_ptr)
+int exhaustive_search_wrapper(const int n, int n_eqs, int ***coeffs, exfes_context *exfes_ctx_ptr)
 {
     const uint64_t N = binomials[n][3];
     const int word_size = 16;
@@ -669,7 +666,6 @@ int exhaustive_search_wrapper(const int n, int n_eqs, const int degree, int ***c
 
     wrapper_state_t wrapper_state;
     wrapper_state.n = n;
-    wrapper_state.degree = degree;
     wrapper_state.n_batches = n_batches - 1;
     wrapper_state.G = G;
     wrapper_state.testing_LUT = idx_LUT;
