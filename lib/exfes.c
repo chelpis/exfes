@@ -139,7 +139,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     if (numVariables == 0 || numVariables >= 127) {
         return -3;
     }
-    if (numVariables - numFixedVariables <= 0 || numVariables - numFixedVariables >= 64) {
+    if (numVariables - numFixedVariables <= 1 || numVariables - numFixedVariables >= 64) {
         return -3;
     }
     if (numEquations <= 16 || numEquations >= 256) {
