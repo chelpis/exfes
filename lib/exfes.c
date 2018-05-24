@@ -18,14 +18,14 @@
             current_solution_index = 0;                                                         \
         }                                                                                       \
     }
-#define CHECK_SOLUTIONS()                                           \
-    {                                                               \
-        for (uint64_t i = 0; i < n_solutions_found; i++) {          \
-            if (solution_buffer[i].mask & 0xffff) {                 \
+#define CHECK_SOLUTIONS()                                                \
+    {                                                                    \
+        for (uint64_t i = 0; i < n_solutions_found; i++) {               \
+            if (solution_buffer[i].mask & 0xffff) {                      \
                 PUSH_SOLUTION(encodeToGray(solution_buffer[i].int_idx)); \
-            }                                                       \
-        }                                                           \
-        n_solutions_found = 0;                                      \
+            }                                                            \
+        }                                                                \
+        n_solutions_found = 0;                                           \
     }
 #define STEP_0(i)                                             \
     {                                                         \
