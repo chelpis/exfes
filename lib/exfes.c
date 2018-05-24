@@ -22,7 +22,7 @@
     {                                                               \
         for (uint64_t i = 0; i < n_solutions_found; i++) {          \
             if (solution_buffer[i].mask & 0xffff) {                 \
-                PUSH_SOLUTION(to_gray(solution_buffer[i].int_idx)); \
+                PUSH_SOLUTION(encodeToGray(solution_buffer[i].int_idx)); \
             }                                                       \
         }                                                           \
         n_solutions_found = 0;                                      \
@@ -110,11 +110,11 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
 }
 #endif
 
-static pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
+static pck_vector_t secondaryEvaluation(LUT_t LUT, int n, pck_vector_t *F, uint64_t i);
 static void free_vector(vector_t x);
 static vector_t init_vector(int n_rows);
 static pck_vector_t pack(int n, const vector_t v);
-static uint64_t to_gray(uint64_t i);
+static uint64_t encodeToGray(uint64_t i);
 static int M(uint64_t startPointHigh, uint64_t startPointLow, int index);
 static void freeEqs(int ***Eqs, int i, int j);
 static int initEqs(int n, int e, int ****EqsPtr);
@@ -258,7 +258,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     }
 }
 
-static pck_vector_t packed_eval_deg_2(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
+static pck_vector_t secondaryEvaluation(LUT_t LUT, int n, pck_vector_t *F, uint64_t i)
 {
     // first expand the values of the variables from `i`
     pck_vector_t v[n];
@@ -311,7 +311,7 @@ static pck_vector_t pack(int n, const vector_t v)
     return r;
 }
 
-static uint64_t to_gray(uint64_t i)
+static uint64_t encodeToGray(uint64_t i)
 {
     return i ^ (i >> 1);
 }
@@ -584,7 +584,7 @@ static int solution_tester(wrapper_state_t *wrapper_state_ptr, uint64_t size, ui
         int is_correct = 1;
         int j = 0;
         while (is_correct && j < wrapper_state_ptr->n_batches) {
-            if (packed_eval_deg_2(wrapper_state_ptr->testing_LUT->LUT, wrapper_state_ptr->n, wrapper_state_ptr->G[j], current_solution) != 0) {
+            if (secondaryEvaluation(wrapper_state_ptr->testing_LUT->LUT, wrapper_state_ptr->n, wrapper_state_ptr->G[j], current_solution) != 0) {
                 is_correct = 0;
             }
             j++;

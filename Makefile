@@ -5,48 +5,46 @@ CFLAGS += -Wall -Wextra -Wpedantic
 CFLAGS += -O3
 CFLAGS += -Ilib/
 
-LIB_OBJS = \
-exfes.o \
+sample1: objs/exfes.o samples/sample1.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o samples/sample1.c -o bin/sample1
 
-OBJS = $(foreach o,$(LIB_OBJS),objs/lib/$(o))
+testCheck: objs/exfes.o tests/testCheck.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/testCheck.c -o bin/testCheck
 
-SCRIPTS = test5.sh test6.sh
+test1: objs/exfes.o tests/test1.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test1.c -o bin/test1
 
-TESTS = test1 test2 test3 test4 test5 test6
+test2: objs/exfes.o tests/test2.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test2.c -o bin/test2
 
-SAMPLE = sample1
+test3: objs/exfes.o tests/test3.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test3.c -o bin/test3
 
-all: $(SAMPLE) $(TESTS) $(SCRIPTS)
+test4: objs/exfes.o tests/test4.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test4.c -o bin/test4
 
-$(SAMPLE): %:objs/samples/%.o $(OBJS) | DIRS
-	@echo 'Linking $@...'
-	$(CC) -o bin/$@ $< $(OBJS)
+test5: objs/exfes.o tests/test5.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test5.c -fopenmp -o bin/test5
 
-$(TESTS): %:objs/tests/%.o $(OBJS) | DIRS
-	@echo 'Linking $@...'
-	$(CC) -fopenmp -o bin/$@ $< $(OBJS)
+test6: objs/exfes.o tests/test6.c | DIRS
+	$(CC) $(CFLAGS) objs/exfes.o tests/test6.c -fopenmp -o bin/test6
 
-objs/tests/%.o: tests/%.c $(OBJS) | DIRS
-	@echo 'Building $@...'
-	$(CC) $(CFLAGS) -fopenmp -c $< -o $@
+memCheck: tests/test5.sh tests/test6.sh
+	cp tests/test5.sh tests/test6.sh bin/
 
-objs/samples/%.o: samples/%.c $(OBJS) | DIRS
-	@echo 'Building $@...'
-	$(CC) $(CFLAGS) -c $< -o $@
+objs/exfes.o: lib/exfes.c | DIRS
+	$(CC) $(CFLAGS) -c lib/exfes.c -o objs/exfes.o
 
-objs/lib/%.o: lib/%.c | DIRS
-	@echo 'Building $@...'
-	$(CC) $(CFLAGS) -c $< -o $@
+all: sample1 testCheck test1 test2 test3 test4 test5 test6 memCheck
 
-$(SCRIPTS):
-	@cp -f tests/$@ bin/$@
-
+.PHONY: DIRS
 DIRS:
-	@mkdir -p objs
-	@mkdir -p objs/lib
-	@mkdir -p objs/tests
-	@mkdir -p objs/samples
-	@mkdir -p bin
+	mkdir -p objs
+	mkdir -p bin
+
+.PHONY: check
+check:
+	./bin/testCheck
 
 .PHONY: clean
 clean:
