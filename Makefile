@@ -1,4 +1,5 @@
-CC = gcc
+#CC = gcc
+CC = /usr/local/Cellar/llvm/6.0.0/bin/clang
 
 CFLAGS = -std=c99
 CFLAGS += -Wall -Wextra -Wpedantic
@@ -43,7 +44,7 @@ DIRS:
 	mkdir -p bin
 
 .PHONY: check
-check:
+check: testCheck
 	./bin/testCheck
 
 .PHONY: clean
