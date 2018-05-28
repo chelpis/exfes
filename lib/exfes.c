@@ -22,7 +22,7 @@
     {                                                                    \
         for (uint64_t i = 0; i < n_solutions_found; i++) {               \
             if (solution_buffer[i].mask & 0xffff) {                      \
-                PUSH_SOLUTION(encodeToGray(solution_buffer[i].int_idx)); \
+                PUSH_SOLUTION(encodeToGray(solution_buffer[i].intIndex)); \
             }                                                            \
         }                                                                \
         n_solutions_found = 0;                                           \
@@ -30,7 +30,7 @@
 #define STEP_0(i)                                             \
     {                                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].int_idx = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;   \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
@@ -39,7 +39,7 @@
     {                                                         \
         F[0] ^= F[a];                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].int_idx = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;   \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
@@ -49,7 +49,7 @@
         F[a] ^= F[b];                                         \
         F[0] ^= F[a];                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].int_idx = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;   \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
@@ -58,16 +58,16 @@
 typedef uint32_t TableInteger;
 typedef TableInteger **Table;
 typedef struct {
-    Table LUT;
-    int n;
+    Table table;
+    int numVariables;
 } TableWithSize;
 typedef int *Vector;
 typedef uint32_t PackedVectors;
 typedef struct {
-    int mcopy;
-    int ncopy;
-    uint64_t solm;
-    uint64_t SolCount;
+    int numFixedVariables;
+    int numVariables;
+    uint64_t partialSolution;
+    uint64_t solutionCount;
     uint64_t startPointHigh;
     uint64_t startPointLow;
     uint64_t *solutionHigh;
@@ -75,16 +75,16 @@ typedef struct {
     bool (*shouldAbortNow)(void);
 } Settings;
 typedef struct {
-    int n;
-    int n_batches;
-    PackedVectors **G;
-    TableWithSize *testing_LUT;
-    Settings *exfes_ctx_ptr;
+    int numVariables;
+    int numBatches;
+    PackedVectors **packedVectors2D;
+    TableWithSize *tableWithSize;
+    Settings *settings;
 } States;
 typedef struct {
-    uint64_t int_idx;
+    uint64_t intIndex;
     uint32_t mask;
-} Solution;
+} Candidate;
 
 static const uint32_t binomials[127][4] = { { 1, 0, 0, 1 }, { 1, 1, 0, 2 }, { 1, 2, 1, 4 }, { 1, 3, 3, 7 }, { 1, 4, 6, 11 }, { 1, 5, 10, 16 }, { 1, 6, 15, 22 }, { 1, 7, 21, 29 }, { 1, 8, 28, 37 }, { 1, 9, 36, 46 }, { 1, 10, 45, 56 }, { 1, 11, 55, 67 }, { 1, 12, 66, 79 }, { 1, 13, 78, 92 }, { 1, 14, 91, 106 }, { 1, 15, 105, 121 }, { 1, 16, 120, 137 }, { 1, 17, 136, 154 }, { 1, 18, 153, 172 }, { 1, 19, 171, 191 }, { 1, 20, 190, 211 }, { 1, 21, 210, 232 }, { 1, 22, 231, 254 }, { 1, 23, 253, 277 }, { 1, 24, 276, 301 }, { 1, 25, 300, 326 }, { 1, 26, 325, 352 }, { 1, 27, 351, 379 }, { 1, 28, 378, 407 }, { 1, 29, 406, 436 }, { 1, 30, 435, 466 }, { 1, 31, 465, 497 }, { 1, 32, 496, 529 }, { 1, 33, 528, 562 }, { 1, 34, 561, 596 }, { 1, 35, 595, 631 }, { 1, 36, 630, 667 }, { 1, 37, 666, 704 }, { 1, 38, 703, 742 }, { 1, 39, 741, 781 }, { 1, 40, 780, 821 }, { 1, 41, 820, 862 }, { 1, 42, 861, 904 }, { 1, 43, 903, 947 }, { 1, 44, 946, 991 }, { 1, 45, 990, 1036 }, { 1, 46, 1035, 1082 }, { 1, 47, 1081, 1129 }, { 1, 48, 1128, 1177 }, { 1, 49, 1176, 1226 }, { 1, 50, 1225, 1276 }, { 1, 51, 1275, 1327 }, { 1, 52, 1326, 1379 }, { 1, 53, 1378, 1432 }, { 1, 54, 1431, 1486 }, { 1, 55, 1485, 1541 }, { 1, 56, 1540, 1597 }, { 1, 57, 1596, 1654 }, { 1, 58, 1653, 1712 }, { 1, 59, 1711, 1771 }, { 1, 60, 1770, 1831 }, { 1, 61, 1830, 1892 }, { 1, 62, 1891, 1954 }, { 1, 63, 1953, 2017 }, { 1, 64, 2016, 2081 }, { 1, 65, 2080, 2146 }, { 1, 66, 2145, 2212 }, { 1, 67, 2211, 2279 }, { 1, 68, 2278, 2347 }, { 1, 69, 2346, 2416 }, { 1, 70, 2415, 2486 }, { 1, 71, 2485, 2557 }, { 1, 72, 2556, 2629 }, { 1, 73, 2628, 2702 }, { 1, 74, 2701, 2776 }, { 1, 75, 2775, 2851 }, { 1, 76, 2850, 2927 }, { 1, 77, 2926, 3004 }, { 1, 78, 3003, 3082 }, { 1, 79, 3081, 3161 }, { 1, 80, 3160, 3241 }, { 1, 81, 3240, 3322 }, { 1, 82, 3321, 3404 }, { 1, 83, 3403, 3487 }, { 1, 84, 3486, 3571 }, { 1, 85, 3570, 3656 }, { 1, 86, 3655, 3742 }, { 1, 87, 3741, 3829 }, { 1, 88, 3828, 3917 }, { 1, 89, 3916, 4006 }, { 1, 90, 4005, 4096 }, { 1, 91, 4095, 4187 }, { 1, 92, 4186, 4279 }, { 1, 93, 4278, 4372 }, { 1, 94, 4371, 4466 }, { 1, 95, 4465, 4561 }, { 1, 96, 4560, 4657 }, { 1, 97, 4656, 4754 }, { 1, 98, 4753, 4852 }, { 1, 99, 4851, 4951 }, { 1, 100, 4950, 5051 }, { 1, 101, 5050, 5152 }, { 1, 102, 5151, 5254 }, { 1, 103, 5253, 5357 }, { 1, 104, 5356, 5461 }, { 1, 105, 5460, 5566 }, { 1, 106, 5565, 5672 }, { 1, 107, 5671, 5779 }, { 1, 108, 5778, 5887 }, { 1, 109, 5886, 5996 }, { 1, 110, 5995, 6106 }, { 1, 111, 6105, 6217 }, { 1, 112, 6216, 6329 }, { 1, 113, 6328, 6442 }, { 1, 114, 6441, 6556 }, { 1, 115, 6555, 6671 }, { 1, 116, 6670, 6787 }, { 1, 117, 6786, 6904 }, { 1, 118, 6903, 7022 }, { 1, 119, 7021, 7141 }, { 1, 120, 7140, 7261 }, { 1, 121, 7260, 7382 }, { 1, 122, 7381, 7504 }, { 1, 123, 7503, 7627 }, { 1, 124, 7626, 7751 }, { 1, 125, 7750, 7876 }, { 1, 126, 7875, 8002 } };
 
@@ -115,7 +115,7 @@ static void *exfesCalloc(size_t num, size_t size, size_t max_num_retries);
 static void computeNextSet(int n, int d, int *set);
 static int convert3DToPackedVectors(const int n, int from, int to, int ***coeffs, TableWithSize *idx_LUT, PackedVectors *F);
 static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions);
-static int fes(const int n, int n_eqs, int ***coeffs, Settings *exfes_ctx_ptr);
+static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings);
 static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_state_ptr);
 
 int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow)
@@ -142,10 +142,10 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
         return -3;
     }
     Settings exfes_ctx;
-    exfes_ctx.mcopy = m;
-    exfes_ctx.ncopy = n;
-    exfes_ctx.solm = 0;
-    exfes_ctx.SolCount = 0;
+    exfes_ctx.numFixedVariables = m;
+    exfes_ctx.numVariables = n;
+    exfes_ctx.partialSolution = 0;
+    exfes_ctx.solutionCount = 0;
     exfes_ctx.startPointHigh = startPointHigh;
     exfes_ctx.startPointLow = startPointLow;
     exfes_ctx.solutionHigh = solutionHigh;
@@ -178,7 +178,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     int p = n - m;
     int npartial;
     int fixvalue;
-    for (exfes_ctx.solm = 0; exfes_ctx.solm < (uint64_t)1 << m; exfes_ctx.solm++) {
+    for (exfes_ctx.partialSolution = 0; exfes_ctx.partialSolution < (uint64_t)1 << m; exfes_ctx.partialSolution++) {
         npartial = n;
         for (int i = 0; i < e; i++) {
             for (int j = 0; j < 3; j++) {
@@ -188,7 +188,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             }
         }
         while (npartial != p) {
-            fixvalue = (exfes_ctx.solm >> (n - npartial)) & 1;
+            fixvalue = (exfes_ctx.partialSolution >> (n - npartial)) & 1;
             for (int i = 0; i < e; i++) {
                 for (int j = 0; j < npartial - 1; j++) {
                     EqsCopy[i][1][j + 1] ^= EqsCopy[i][2][j] & fixvalue;
@@ -208,18 +208,18 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             freeEqs(Eqs, e, -1);
             return -4;
         }
-        if (exfes_ctx.SolCount == 1) {
+        if (exfes_ctx.solutionCount == 1) {
             break;
         }
-        if (exfes_ctx.SolCount == 2) {
+        if (exfes_ctx.solutionCount == 2) {
             break;
         }
     }
     freeEqs(EqsCopy, e, -1);
     freeEqs(Eqs, e, -1);
-    if (exfes_ctx.SolCount == 1) {
+    if (exfes_ctx.solutionCount == 1) {
         return 0;
-    } else if (exfes_ctx.SolCount == 0) {
+    } else if (exfes_ctx.solutionCount == 0) {
         return -1;
     } else {
         return -2;
@@ -347,24 +347,24 @@ static void convert1DTo3D(int n, int e, const uint8_t *coefficientsMatrix, int *
 
 static void mergeSolution(Settings *p, uint64_t count, uint64_t *Sol)
 {
-    const int mcopy = p->mcopy;
-    const int ncopy = p->ncopy;
-    const uint64_t solm = p->solm;
+    const int numFixedVariables = p->numFixedVariables;
+    const int numVariables = p->numVariables;
+    const uint64_t partialSolution = p->partialSolution;
     const uint64_t startPointHigh = p->startPointHigh;
     const uint64_t startPointLow = p->startPointLow;
     uint64_t *solutionHigh = p->solutionHigh;
     uint64_t *solutionLow = p->solutionLow;
-    solutionLow[0] = (Sol[count - 1] << mcopy) ^ solm;
-    if (mcopy > 0) {
-        solutionHigh[0] = Sol[count - 1] >> (64 - mcopy);
+    solutionLow[0] = (Sol[count - 1] << numFixedVariables) ^ partialSolution;
+    if (numFixedVariables > 0) {
+        solutionHigh[0] = Sol[count - 1] >> (64 - numFixedVariables);
     }
-    if (ncopy < 64) {
-        solutionLow[0] ^= (startPointLow << (64 - ncopy)) >> (64 - ncopy);
+    if (numVariables < 64) {
+        solutionLow[0] ^= (startPointLow << (64 - numVariables)) >> (64 - numVariables);
     } else {
         solutionLow[0] ^= startPointLow;
-        solutionHigh[0] ^= (startPointHigh << (128 - ncopy)) >> (128 - ncopy);
+        solutionHigh[0] ^= (startPointHigh << (128 - numVariables)) >> (128 - numVariables);
     }
-    p->SolCount = 1;
+    p->solutionCount = 1;
 }
 
 static TableWithSize *initTable(int n)
@@ -416,15 +416,15 @@ static TableWithSize *initTable(int n)
         free(LUT);
         return 0;
     }
-    idx_lut->n = n;
-    idx_lut->LUT = LUT;
+    idx_lut->numVariables = n;
+    idx_lut->table = LUT;
     return (TableWithSize *)idx_lut;
 }
 
 static TableInteger computeIntegerFromSet(const TableWithSize *table, int *set)
 {
     const int d = 2;
-    Table LUT = table->LUT;
+    Table LUT = table->table;
     TableInteger value = 0;
 
     for (int i = 0; i < d; i++) {
@@ -442,11 +442,11 @@ static void freeTable(const TableWithSize *table)
 {
     if (table) {
         for (int i = 0; i < 2; i++) {
-            if (table->LUT[i]) {
-                free((void *)table->LUT[i]);
+            if (table->table[i]) {
+                free((void *)table->table[i]);
             }
         }
-        free((void *)table->LUT);
+        free((void *)table->table);
         free((void *)table);
     }
 }
@@ -511,8 +511,8 @@ static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_so
         uint64_t current_solution = n_solutions[i];
         int is_correct = 1;
         int j = 0;
-        while (is_correct && j < wrapper_state_ptr->n_batches) {
-            if (secondaryEvaluation(wrapper_state_ptr->testing_LUT->LUT, wrapper_state_ptr->n, wrapper_state_ptr->G[j], current_solution) != 0) {
+        while (is_correct && j < wrapper_state_ptr->numBatches) {
+            if (secondaryEvaluation(wrapper_state_ptr->tableWithSize->table, wrapper_state_ptr->numVariables, wrapper_state_ptr->packedVectors2D[j], current_solution) != 0) {
                 is_correct = 0;
             }
             j++;
@@ -521,14 +521,14 @@ static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_so
             int num_correct_solutions = 1;
             uint64_t corrects_solutions[1];
             corrects_solutions[0] = current_solution;
-            mergeSolution(wrapper_state_ptr->exfes_ctx_ptr, num_correct_solutions, corrects_solutions);
+            mergeSolution(wrapper_state_ptr->settings, num_correct_solutions, corrects_solutions);
             return 1;
         }
     }
     return 0;
 }
 
-static int fes(const int n, int n_eqs, int ***coeffs, Settings *exfes_ctx_ptr)
+static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings)
 {
     const uint64_t N = binomials[n][3];
     const int word_size = 16;
@@ -546,18 +546,18 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *exfes_ctx_ptr)
         freeTable(idx_LUT);
         return -4;
     }
-    int n_batches = n_eqs / word_size;
+    int numBatches = n_eqs / word_size;
     if (n_eqs % word_size) {
-        n_batches++;
+        numBatches++;
     }
-    PackedVectors **G = (PackedVectors **)exfesCalloc(n_batches - 1, sizeof(PackedVectors *), 10);
+    PackedVectors **G = (PackedVectors **)exfesCalloc(numBatches - 1, sizeof(PackedVectors *), 10);
     if (!G) {
         free(F);
         freeTable(idx_LUT);
         return -4;
     }
     int should_free_G_count = -1;
-    for (int i = 1; i < n_batches; i++) {
+    for (int i = 1; i < numBatches; i++) {
         G[i - 1] = (PackedVectors *)exfesCalloc(N, sizeof(PackedVectors), 10);
         if (!G[i - 1]) {
             should_free_G_count = i - 1;
@@ -580,13 +580,13 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *exfes_ctx_ptr)
         return -4;
     }
     States wrapper_state;
-    wrapper_state.n = n;
-    wrapper_state.n_batches = n_batches - 1;
-    wrapper_state.G = G;
-    wrapper_state.testing_LUT = idx_LUT;
-    wrapper_state.exfes_ctx_ptr = exfes_ctx_ptr;
-    primarySearch(idx_LUT->LUT, n, F, &wrapper_state);
-    for (int i = n_batches - 1; i >= 1; i--) {
+    wrapper_state.numVariables = n;
+    wrapper_state.numBatches = numBatches - 1;
+    wrapper_state.packedVectors2D = G;
+    wrapper_state.tableWithSize = idx_LUT;
+    wrapper_state.settings = settings;
+    primarySearch(idx_LUT->table, n, F, &wrapper_state);
+    for (int i = numBatches - 1; i >= 1; i--) {
         free(G[i - 1]);
     }
     free(G);
@@ -597,7 +597,7 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *exfes_ctx_ptr)
 
 static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_state_ptr)
 {
-    Settings *ctx = wrapper_state_ptr->exfes_ctx_ptr;
+    Settings *ctx = wrapper_state_ptr->settings;
     for (int i0 = 1; i0 < n; i0++) {
         if (i0 != 0) {
             F[idx_1(LUT, i0)] ^= F[idx_2(LUT, i0 - 1, i0)];
@@ -606,7 +606,7 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_st
     uint64_t n_solutions_found = 0;
     uint64_t current_solution_index = 0;
     uint64_t packVectors_of_solution[1];
-    Solution solution_buffer[516];
+    Candidate solution_buffer[516];
     const uint64_t weight_0_start = 0;
     STEP_0(0);
     for (int idx_0 = 0; idx_0 < n; idx_0++) {
@@ -633,7 +633,7 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_st
         CHECK_SOLUTIONS();
         for (uint64_t j = 512; j < (1ull << idx_0); j += 512) {
             if (ctx->shouldAbortNow()) {
-                ctx->SolCount = 2;
+                ctx->solutionCount = 2;
                 return;
             }
             const uint64_t i = j + weight_1_start;
