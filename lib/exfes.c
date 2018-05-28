@@ -18,19 +18,19 @@
             current_solution_index = 0;                                                             \
         }                                                                                           \
     }
-#define CHECK_SOLUTIONS()                                                \
-    {                                                                    \
-        for (uint64_t i = 0; i < n_solutions_found; i++) {               \
-            if (solution_buffer[i].mask & 0xffff) {                      \
+#define CHECK_SOLUTIONS()                                                 \
+    {                                                                     \
+        for (uint64_t i = 0; i < n_solutions_found; i++) {                \
+            if (solution_buffer[i].mask & 0xffff) {                       \
                 PUSH_SOLUTION(encodeToGray(solution_buffer[i].intIndex)); \
-            }                                                            \
-        }                                                                \
-        n_solutions_found = 0;                                           \
+            }                                                             \
+        }                                                                 \
+        n_solutions_found = 0;                                            \
     }
 #define STEP_0(i)                                             \
     {                                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;  \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
@@ -39,7 +39,7 @@
     {                                                         \
         F[0] ^= F[a];                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;  \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
@@ -49,7 +49,7 @@
         F[a] ^= F[b];                                         \
         F[0] ^= F[a];                                         \
         if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;   \
+            solution_buffer[n_solutions_found].intIndex = i;  \
             solution_buffer[n_solutions_found].mask = 0x000f; \
             n_solutions_found++;                              \
         }                                                     \
