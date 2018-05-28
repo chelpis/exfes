@@ -7,16 +7,16 @@
 #define idx_2(LUT, i1, i0) (idx_1(LUT, i0) + (LUT)[1][i1])
 #define min(x, y) (((x) > (y)) ? (y) : (x))
 #define unlikely(x) __builtin_expect(!!(x), 0)
-#define PUSH_SOLUTION(current_solution)                                                             \
-    {                                                                                               \
-        packVectors_of_solution[current_solution_index] = current_solution;                         \
-        current_solution_index++;                                                                   \
-        if (current_solution_index == 1) {                                                          \
-            if (testSolution(wrapper_state_ptr, current_solution_index, packVectors_of_solution)) { \
-                return;                                                                             \
-            }                                                                                       \
-            current_solution_index = 0;                                                             \
-        }                                                                                           \
+#define PUSH_SOLUTION(current_solution)                                                  \
+    {                                                                                    \
+        packVectors_of_solution[current_solution_index] = current_solution;              \
+        current_solution_index++;                                                        \
+        if (current_solution_index == 1) {                                               \
+            if (testSolution(States, current_solution_index, packVectors_of_solution)) { \
+                return;                                                                  \
+            }                                                                            \
+            current_solution_index = 0;                                                  \
+        }                                                                                \
     }
 #define CHECK_SOLUTIONS()                                                 \
     {                                                                     \
@@ -105,7 +105,7 @@ static PackedVectors packVectors(int n, const Vector v);
 static uint64_t encodeToGray(uint64_t i);
 static int selectOneBit(uint64_t startPointHigh, uint64_t startPointLow, int index);
 static void freeEqs(int ***Eqs, int i, int j);
-static int initEqs(int n, int e, int ****EqsPtr);
+static int initEqs(int n, int e, int ****Eqs);
 static void convert1DTo3D(int n, int e, const uint8_t *coefficientsMatrix, int ***Eqs);
 static void mergeSolution(Settings *p, uint64_t count, uint64_t *Sol);
 static TableWithSize *initTable(int n);
@@ -114,9 +114,9 @@ static void freeTable(const TableWithSize *tab);
 static void *exfesCalloc(size_t num, size_t size, size_t max_num_retries);
 static void computeNextSet(int n, int d, int *set);
 static int convert3DToPackedVectors(const int n, int from, int to, int ***coeffs, TableWithSize *idx_LUT, PackedVectors *F);
-static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions);
+static int testSolution(States *States, uint64_t size, uint64_t *n_solutions);
 static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings);
-static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_state_ptr);
+static void primarySearch(Table LUT, int n, PackedVectors *F, States *States);
 
 int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquations, uint64_t startPointHigh, uint64_t startPointLow, const uint8_t *coefficientsMatrix, bool (*shouldAbortNow)(void), uint64_t *solutionHigh, uint64_t *solutionLow)
 {
@@ -305,22 +305,22 @@ static void freeEqs(int ***Eqs, int i, int j)
     free(Eqs);
 }
 
-static int initEqs(int n, int e, int ****EqsPtr)
+static int initEqs(int n, int e, int ****Eqs)
 {
-    EqsPtr[0] = (int ***)exfesCalloc(e, sizeof(int **), 10);
-    if (!EqsPtr[0]) {
+    Eqs[0] = (int ***)exfesCalloc(e, sizeof(int **), 10);
+    if (!Eqs[0]) {
         return -4;
     }
     for (int i = 0; i < e; i++) {
-        EqsPtr[0][i] = (int **)exfesCalloc(3, sizeof(int *), 10);
-        if (!EqsPtr[0][i]) {
-            freeEqs(EqsPtr[0], i, -1);
+        Eqs[0][i] = (int **)exfesCalloc(3, sizeof(int *), 10);
+        if (!Eqs[0][i]) {
+            freeEqs(Eqs[0], i, -1);
             return -4;
         }
         for (int j = 0; j < 3; j++) {
-            EqsPtr[0][i][j] = (int *)exfesCalloc(binomials[n][j], sizeof(int), 10);
-            if (!EqsPtr[0][i][j]) {
-                freeEqs(EqsPtr[0], i, j);
+            Eqs[0][i][j] = (int *)exfesCalloc(binomials[n][j], sizeof(int), 10);
+            if (!Eqs[0][i][j]) {
+                freeEqs(Eqs[0], i, j);
                 return -4;
             }
         }
@@ -505,14 +505,14 @@ static int convert3DToPackedVectors(const int n, int from, int to, int ***coeffs
     return 0;
 }
 
-static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_solutions)
+static int testSolution(States *States, uint64_t size, uint64_t *n_solutions)
 {
     for (uint64_t i = 0; i < size; i++) {
         uint64_t current_solution = n_solutions[i];
         int is_correct = 1;
         int j = 0;
-        while (is_correct && j < wrapper_state_ptr->numBatches) {
-            if (secondaryEvaluation(wrapper_state_ptr->tableWithSize->table, wrapper_state_ptr->numVariables, wrapper_state_ptr->packedVectors2D[j], current_solution) != 0) {
+        while (is_correct && j < States->numBatches) {
+            if (secondaryEvaluation(States->tableWithSize->table, States->numVariables, States->packedVectors2D[j], current_solution) != 0) {
                 is_correct = 0;
             }
             j++;
@@ -521,7 +521,7 @@ static int testSolution(States *wrapper_state_ptr, uint64_t size, uint64_t *n_so
             int num_correct_solutions = 1;
             uint64_t corrects_solutions[1];
             corrects_solutions[0] = current_solution;
-            mergeSolution(wrapper_state_ptr->settings, num_correct_solutions, corrects_solutions);
+            mergeSolution(States->settings, num_correct_solutions, corrects_solutions);
             return 1;
         }
     }
@@ -579,13 +579,13 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings)
         freeTable(idx_LUT);
         return -4;
     }
-    States wrapper_state;
-    wrapper_state.numVariables = n;
-    wrapper_state.numBatches = numBatches - 1;
-    wrapper_state.packedVectors2D = G;
-    wrapper_state.tableWithSize = idx_LUT;
-    wrapper_state.settings = settings;
-    primarySearch(idx_LUT->table, n, F, &wrapper_state);
+    States States;
+    States.numVariables = n;
+    States.numBatches = numBatches - 1;
+    States.packedVectors2D = G;
+    States.tableWithSize = idx_LUT;
+    States.settings = settings;
+    primarySearch(idx_LUT->table, n, F, &States);
     for (int i = numBatches - 1; i >= 1; i--) {
         free(G[i - 1]);
     }
@@ -595,9 +595,9 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings)
     return 0;
 }
 
-static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_state_ptr)
+static void primarySearch(Table LUT, int n, PackedVectors *F, States *States)
 {
-    Settings *ctx = wrapper_state_ptr->settings;
+    Settings *ctx = States->settings;
     for (int i0 = 1; i0 < n; i0++) {
         if (i0 != 0) {
             F[idx_1(LUT, i0)] ^= F[idx_2(LUT, i0 - 1, i0)];
@@ -1168,5 +1168,5 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *wrapper_st
             CHECK_SOLUTIONS();
         }
     }
-    testSolution(wrapper_state_ptr, current_solution_index, packVectors_of_solution);
+    testSolution(States, current_solution_index, packVectors_of_solution);
 }
