@@ -7,52 +7,52 @@
 #define idx_2(LUT, i1, i0) (idx_1(LUT, i0) + (LUT)[1][i1])
 #define min(x, y) (((x) > (y)) ? (y) : (x))
 #define unlikely(x) __builtin_expect(!!(x), 0)
-#define PUSH_SOLUTION(current_solution)                                                  \
-    {                                                                                    \
-        packVectors_of_solution[current_solution_index] = current_solution;              \
-        current_solution_index++;                                                        \
-        if (current_solution_index == 1) {                                               \
-            if (testSolution(States, current_solution_index, packVectors_of_solution)) { \
-                return;                                                                  \
-            }                                                                            \
-            current_solution_index = 0;                                                  \
-        }                                                                                \
+#define PUSH_SOLUTION(current_solution)                                  \
+    {                                                                    \
+        solution[currentCandidateIndex] = current_solution;              \
+        currentCandidateIndex++;                                         \
+        if (currentCandidateIndex == 1) {                                \
+            if (testSolution(States, currentCandidateIndex, solution)) { \
+                return;                                                  \
+            }                                                            \
+            currentCandidateIndex = 0;                                   \
+        }                                                                \
     }
-#define CHECK_SOLUTIONS()                                                 \
-    {                                                                     \
-        for (uint64_t i = 0; i < n_solutions_found; i++) {                \
-            if (solution_buffer[i].mask & 0xffff) {                       \
-                PUSH_SOLUTION(encodeToGray(solution_buffer[i].intIndex)); \
-            }                                                             \
-        }                                                                 \
-        n_solutions_found = 0;                                            \
+#define CHECK_SOLUTIONS()                                            \
+    {                                                                \
+        for (uint64_t i = 0; i < numCandidates; i++) {               \
+            if (candidates[i].mask & 0xffff) {                       \
+                PUSH_SOLUTION(encodeToGray(candidates[i].intIndex)); \
+            }                                                        \
+        }                                                            \
+        numCandidates = 0;                                           \
     }
-#define STEP_0(i)                                             \
-    {                                                         \
-        if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;  \
-            solution_buffer[n_solutions_found].mask = 0x000f; \
-            n_solutions_found++;                              \
-        }                                                     \
+#define STEP_0(i)                                    \
+    {                                                \
+        if (unlikely(F[0] == 0)) {                   \
+            candidates[numCandidates].intIndex = i;  \
+            candidates[numCandidates].mask = 0x000f; \
+            numCandidates++;                         \
+        }                                            \
     }
-#define STEP_1(a, i)                                          \
-    {                                                         \
-        F[0] ^= F[a];                                         \
-        if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;  \
-            solution_buffer[n_solutions_found].mask = 0x000f; \
-            n_solutions_found++;                              \
-        }                                                     \
+#define STEP_1(a, i)                                 \
+    {                                                \
+        F[0] ^= F[a];                                \
+        if (unlikely(F[0] == 0)) {                   \
+            candidates[numCandidates].intIndex = i;  \
+            candidates[numCandidates].mask = 0x000f; \
+            numCandidates++;                         \
+        }                                            \
     }
-#define STEP_2(a, b, i)                                       \
-    {                                                         \
-        F[a] ^= F[b];                                         \
-        F[0] ^= F[a];                                         \
-        if (unlikely(F[0] == 0)) {                            \
-            solution_buffer[n_solutions_found].intIndex = i;  \
-            solution_buffer[n_solutions_found].mask = 0x000f; \
-            n_solutions_found++;                              \
-        }                                                     \
+#define STEP_2(a, b, i)                              \
+    {                                                \
+        F[a] ^= F[b];                                \
+        F[0] ^= F[a];                                \
+        if (unlikely(F[0] == 0)) {                   \
+            candidates[numCandidates].intIndex = i;  \
+            candidates[numCandidates].mask = 0x000f; \
+            numCandidates++;                         \
+        }                                            \
     }
 
 typedef uint32_t TableInteger;
@@ -141,16 +141,16 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     if (!(solutionHigh && solutionLow)) {
         return -3;
     }
-    Settings exfes_ctx;
-    exfes_ctx.numFixedVariables = m;
-    exfes_ctx.numVariables = n;
-    exfes_ctx.partialSolution = 0;
-    exfes_ctx.solutionCount = 0;
-    exfes_ctx.startPointHigh = startPointHigh;
-    exfes_ctx.startPointLow = startPointLow;
-    exfes_ctx.solutionHigh = solutionHigh;
-    exfes_ctx.solutionLow = solutionLow;
-    exfes_ctx.shouldAbortNow = shouldAbortNow;
+    Settings settings;
+    settings.numFixedVariables = m;
+    settings.numVariables = n;
+    settings.partialSolution = 0;
+    settings.solutionCount = 0;
+    settings.startPointHigh = startPointHigh;
+    settings.startPointLow = startPointLow;
+    settings.solutionHigh = solutionHigh;
+    settings.solutionLow = solutionLow;
+    settings.shouldAbortNow = shouldAbortNow;
     int ***Eqs;
     if (initEqs(n, e, &Eqs) != 0) {
         return -4;
@@ -178,7 +178,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
     int p = n - m;
     int npartial;
     int fixvalue;
-    for (exfes_ctx.partialSolution = 0; exfes_ctx.partialSolution < (uint64_t)1 << m; exfes_ctx.partialSolution++) {
+    for (settings.partialSolution = 0; settings.partialSolution < (uint64_t)1 << m; settings.partialSolution++) {
         npartial = n;
         for (int i = 0; i < e; i++) {
             for (int j = 0; j < 3; j++) {
@@ -188,7 +188,7 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             }
         }
         while (npartial != p) {
-            fixvalue = (exfes_ctx.partialSolution >> (n - npartial)) & 1;
+            fixvalue = (settings.partialSolution >> (n - npartial)) & 1;
             for (int i = 0; i < e; i++) {
                 for (int j = 0; j < npartial - 1; j++) {
                     EqsCopy[i][1][j + 1] ^= EqsCopy[i][2][j] & fixvalue;
@@ -203,23 +203,23 @@ int exfes(uint32_t numFixedVariables, uint32_t numVariables, uint32_t numEquatio
             }
             npartial -= 1;
         }
-        if (fes(npartial, e, EqsCopy, &exfes_ctx) != 0) {
+        if (fes(npartial, e, EqsCopy, &settings) != 0) {
             freeEqs(EqsCopy, e, -1);
             freeEqs(Eqs, e, -1);
             return -4;
         }
-        if (exfes_ctx.solutionCount == 1) {
+        if (settings.solutionCount == 1) {
             break;
         }
-        if (exfes_ctx.solutionCount == 2) {
+        if (settings.solutionCount == 2) {
             break;
         }
     }
     freeEqs(EqsCopy, e, -1);
     freeEqs(Eqs, e, -1);
-    if (exfes_ctx.solutionCount == 1) {
+    if (settings.solutionCount == 1) {
         return 0;
-    } else if (exfes_ctx.solutionCount == 0) {
+    } else if (settings.solutionCount == 0) {
         return -1;
     } else {
         return -2;
@@ -595,23 +595,23 @@ static int fes(const int n, int n_eqs, int ***coeffs, Settings *settings)
     return 0;
 }
 
-static void primarySearch(Table LUT, int n, PackedVectors *F, States *States)
+static void primarySearch(Table table, int n, PackedVectors *F, States *States)
 {
-    Settings *ctx = States->settings;
+    Settings *settings = States->settings;
     for (int i0 = 1; i0 < n; i0++) {
         if (i0 != 0) {
-            F[idx_1(LUT, i0)] ^= F[idx_2(LUT, i0 - 1, i0)];
+            F[idx_1(table, i0)] ^= F[idx_2(table, i0 - 1, i0)];
         }
     }
-    uint64_t n_solutions_found = 0;
-    uint64_t current_solution_index = 0;
-    uint64_t packVectors_of_solution[1];
-    Candidate solution_buffer[516];
+    uint64_t numCandidates = 0;
+    uint64_t currentCandidateIndex = 0;
+    uint64_t solution[1];
+    Candidate candidates[516];
     const uint64_t weight_0_start = 0;
     STEP_0(0);
     for (int idx_0 = 0; idx_0 < n; idx_0++) {
         const uint64_t weight_1_start = weight_0_start + (1ULL << idx_0);
-        STEP_1(idx_1(LUT, idx_0), weight_1_start);
+        STEP_1(idx_1(table, idx_0), weight_1_start);
         const uint64_t rolled_end = weight_1_start + (1ULL << min(9, idx_0));
         for (uint64_t i = 1 + weight_1_start; i < rolled_end; i++) {
             int pos = 0;
@@ -628,12 +628,12 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *States)
                 pos++;
             }
             const int k_2 = pos;
-            STEP_2(idx_1(LUT, k_1), idx_2(LUT, k_1, k_2), i);
+            STEP_2(idx_1(table, k_1), idx_2(table, k_1, k_2), i);
         }
         CHECK_SOLUTIONS();
         for (uint64_t j = 512; j < (1ull << idx_0); j += 512) {
-            if (ctx->shouldAbortNow()) {
-                ctx->solutionCount = 2;
+            if (settings->shouldAbortNow()) {
+                settings->solutionCount = 2;
                 return;
             }
             const uint64_t i = j + weight_1_start;
@@ -651,8 +651,8 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *States)
                 pos++;
             }
             const int k_2 = pos;
-            const int alpha = LUT[0][k_1];
-            const int beta = LUT[1][k_1] + LUT[0][k_2];
+            const int alpha = table[0][k_1];
+            const int beta = table[1][k_1] + table[0][k_2];
             STEP_2(0 + alpha, 0 + beta, i + 0);
             STEP_2(1, 1 + alpha, i + 1);
             STEP_2(2, 2 + alpha, i + 2);
@@ -1168,5 +1168,5 @@ static void primarySearch(Table LUT, int n, PackedVectors *F, States *States)
             CHECK_SOLUTIONS();
         }
     }
-    testSolution(States, current_solution_index, packVectors_of_solution);
+    testSolution(States, currentCandidateIndex, solution);
 }
